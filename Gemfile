@@ -1,6 +1,6 @@
 source 'https://rubygems.org'
 
-gem 'webrick'
+gem 'webrick', '= 1.4.2'
 gem 'sinatra'
 gem 'sinatra-partial'
 gem 'sinatra-contrib'
