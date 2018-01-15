@@ -1,0 +1,40 @@
+<% content_for :title do %>
+    Logga In
+<%end%>
+
+<article class="main" id="login_main">
+    <%if login_msg != nil%>
+        <p><%= login_msg %></p>
+    <% else %>
+        <p>Logga in för att se vilka saker du har lånat:</p>
+    <%end%>
+    <form action="/login" id="login_form" method="post" enctype="application/x-www-form-urlencoded" onkeypress="form_keypress(event)">
+        <input type="email" name="user_email" id="login_email" placeholder="Email">
+        <input type="password" name="user_password" id="login_password" placeholder="lösenord">
+        <input type="button" id="login_submit_button" value="Logga in" onclick="on_submit()">
+    </form>
+    <p id="error_msg"></p>
+</article>
+
+<script type="text/javascript" charset="utf-8">
+    function on_submit() {
+            var login_info = new FormData();
+            login_info.append("user_email", document.getElementById("login_email").value);
+            login_info.append("user_password", document.getElementById("login_password").value);
+            newServerAjaxCall("/check-user-information", login_info, function (response) {
+                if (response === "true") {
+                    document.getElementById("login_form").submit();
+                } else {
+                    document.getElementById("error_msg").innerHTML = "Fel lösenord eller användarnamn!";
+                }
+            });
+        }
+
+    function form_keypress(event) {
+        if (event.keyCode === 13) {
+            if(document.getElementById("login_email").value !== "" && document.getElementById("login_password").value !== "") {
+                on_submit();
+            }
+        }
+    }
+</script>

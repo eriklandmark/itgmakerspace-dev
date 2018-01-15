@@ -1,0 +1,29 @@
+footer {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  bottom: 0;
+  width: 100vw;
+  background: linear-gradient(90deg, #1f1f1f, #000);
+  height: $footer_height;
+  font-family: "Open Sans", sans-serif;
+  margin-top: 5vh;
+  color: white;
+
+  p {
+    color: white;
+    font-size: 0.8em;
+    margin: 0 10px 0 10px;
+  }
+
+  img {
+    margin-left: 20px;
+    margin-right: 20px;
+  }
+
+  #itg_logo {
+    height: 15px;
+  }
+}

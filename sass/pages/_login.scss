@@ -1,0 +1,34 @@
+#login_main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  height: calc(95vh - #{$footer_height});
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  input[type=email], input[type=password] {
+    border: 2px solid gray;
+    border-radius: 5px;
+    background-color: white;
+    margin: 5px 0;
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.2em;
+    padding: 5px;
+    width: 30vw;
+  }
+
+  input[type=button] {
+    background-color: lightgray;
+    border: none;
+    margin-top: 30px;
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.3em;
+    padding: 10px 20px;
+  }
+}

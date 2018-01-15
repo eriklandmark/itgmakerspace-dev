@@ -1,0 +1,23 @@
+doctype html
+html
+  javascript:
+      | var tlJsHost = ((window.location.protocol == "https:") ? "https://secure.comodo.com/" : "http://www.trustlogo.com/");
+      | document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
+  head
+    /! Global site tag (gtag.js) - Google Analytics
+    script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-110240296-1"
+    javascript:
+        | window.dataLayer = window.dataLayer || [];
+        | function gtag() {dataLayer.push(arguments);}
+        | gtag('js', new Date());
+        | gtag('config', 'UA-110240296-1');
+    meta charset="UTF-8" /
+    meta content="width=device-width, initial-scale=1.0" name="viewport" /
+    link href="/css/main.css" rel="stylesheet" /
+    script src="/js/main.min.js"
+    title
+      | ITG Makerspace - #{yield_content :title}
+  body
+    == erb :"parts/navigation_bar"
+    == yield
+    == erb :"parts/footer"

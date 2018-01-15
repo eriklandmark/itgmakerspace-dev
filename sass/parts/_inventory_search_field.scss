@@ -1,0 +1,55 @@
+#search_margin_box {
+  width: 100%;
+  height: 70px;
+  background-color: transparent;
+}
+
+#inventory_search_div {
+  position: fixed;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  width: 100vw;
+  height: 70px;
+  top: $nav_bar_height;
+  left: 0;
+  background-color: lightgray;
+
+  #search_form {
+    display: flex;
+    flex-direction: row;
+    width: 50%;
+
+    input[type="search"] {
+      font-family: "Open Sans", sans-serif;
+      font-size: 1em;
+      padding: 8px 15px;
+      border-radius: 100px;
+      border: 2px solid grey;
+      width: 100%;
+      background-color: white;
+      &:focus {
+        border: 2px solid black;
+        outline: none;
+      }
+    }
+
+    input[type="submit"] {
+      border: 2px solid grey;
+      background-color: white;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1em;
+      padding: 8px 20px;
+      border-radius: 100px;
+      margin-left: 10px;
+      &:hover {
+        cursor: pointer;
+      }
+      &:focus {
+        border: 2px solid black;
+        outline: none;
+      }
+    }
+  }
+}

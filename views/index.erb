@@ -1,0 +1,15 @@
+<% content_for :title do %>
+    Hem
+<%end%>
+<article class="main" id="index_main">
+    <div id="header_img"></div>
+
+    <div id="info">
+        <h1>Välkommen!</h1>
+        <p id="time_to_next_meeting"></p>
+    </div>
+</article>
+
+<script type="text/javascript" charset="utf-8">
+    initializeCountdown('<%= month + ' ' + day + ' ' + year + ' ' + hour%>');
+</script>

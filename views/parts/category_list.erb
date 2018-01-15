@@ -1,0 +1,11 @@
+<div id="category_wrapper">
+  <div id="categories_list">
+    <h3>Kategorier:</h3>
+    <div id="categories">
+      <a href="/inventory?category=0">Alla</a>
+      <% get_categories.each do |category| %>
+          <a href="/inventory?category=<%=category[:category_id]%>"><%=category[:category_name]%></a>
+      <% end %>
+    </div>
+  </div>
+</div>

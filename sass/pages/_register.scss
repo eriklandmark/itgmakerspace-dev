@@ -1,0 +1,54 @@
+#register_main {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+  height: calc(95vh - #{$footer_height});
+
+  .grecaptcha-badge {
+    //position: fixed;
+    //right: 0;
+    //bottom: 80px;
+    display: none;
+  }
+
+  form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  label {
+    font-size: 1em;
+    font-family: "Open Sans", sans-serif;
+    margin-right: 20px;
+  }
+
+  input[type=email], input[type=password], input[type=text], input[type=date] {
+    border: 2px solid gray;
+    border-radius: 5px;
+    background-color: white;
+    margin: 5px 0;
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.2em;
+    padding: 5px;
+    width: 30vw;
+  }
+
+  #buttons {
+    width: 100%;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: space-between;
+  }
+
+  input[type=button], input[type=reset] {
+    background-color: lightgray;
+    border: none;
+    margin-top: 30px;
+    font-family: "Open Sans", sans-serif;
+    font-size: 1.3em;
+    padding: 10px 20px;
+  }
+}

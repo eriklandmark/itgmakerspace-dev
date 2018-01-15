@@ -1,0 +1,102 @@
+<% content_for :title do %>
+    Registrera
+<% end %>
+
+<article class="main" id="register_main">
+  <h3>Registrera dig:</h3>
+  <div id="form_box">
+    <form id="register_form" action="/register" method="post" accept-charset="UTF-8">
+      <table>
+        <tr>
+          <td class="labels"><label for="fullname">Ditt fulla namn *</label></td>
+          <td>
+            <input type="text" name="fullname" placeholder="Anders Andersson" onkeypress="this.style.backgroundColor='white'">
+            <br></td>
+        </tr>
+        <tr>
+          <td class="labels"><label for="birth">Födelsedatum *</label></td>
+          <td><input type="date" name="birth" onkeypress="this.style.backgroundColor='white'"> <br></td>
+        </tr>
+        <tr>
+          <td class="labels"><label for="email">Email *</label></td>
+          <td>
+            <input type="email" name="email" placeholder="anders.andersson@mail.se" onkeypress="this.style.backgroundColor='white'">
+            <br></td>
+        </tr>
+        <tr>
+          <td class="labels"><label for="password1">Password *</label></td>
+          <td><input type="password" name="password1" placeholder="Nytt lösenord.." onkeypress="this.style.backgroundColor='white'">
+            <br></td>
+        </tr>
+        <tr>
+          <td class="labels"><label for="password2">Bekräfta lösenord *</label></td>
+          <td><input type="password" name="password2" placeholder="Nytt lösenord igen.." onkeypress="this.style.backgroundColor='white'">
+            <br></td>
+        </tr>
+      </table>
+
+      <div id="buttons">
+        <input type="button" onclick="before_register_submit()" value="BLI MEDLEM">
+        <div id='recaptcha' class="g-recaptcha"
+             data-sitekey="6LdrnTkUAAAAAG3TRNWKCFN9oMWSSP_Tp4wxqdVV"
+             data-callback="on_register_submit"
+             data-size="invisible"
+             data-badge="inline"></div>
+        <input type="reset" value="ÅTERSTÄLL">
+      </div>
+    </form>
+    <h4 id="error_msg"></h4>
+    </div>
+  <p id="error_msg"></p>
+</article>
+
+<script type="text/javascript" charset="utf-8">
+    function before_register_submit() {
+        var form = document.getElementById("register_form").elements;
+        var isEmpty = false;
+        if (form.namedItem("fullname").value === "" || form.namedItem("fullname").value === null) {
+            form.namedItem("fullname").style.backgroundColor = "orangered";
+            isEmpty = true;
+        }
+        if (form.namedItem("birth").value === "" || form.namedItem("birth").value === null) {
+            form.namedItem("birth").style.backgroundColor = "orangered";
+            isEmpty = true;
+        } else{
+            form.namedItem("birth").style.backgroundColor = "white";
+        }
+        if (form.namedItem("email").value === "" || form.namedItem("email").value === null) {
+            form.namedItem("email").style.backgroundColor = "orangered";
+            isEmpty = true;
+        }
+        if (form.namedItem("password1").value === "" || form.namedItem("password1").value === null) {
+            form.namedItem("password1").style.backgroundColor = "orangered";
+            isEmpty = true;
+        }
+        if (form.namedItem("password2").value === "" || form.namedItem("password2").value === null) {
+            form.namedItem("password2").style.backgroundColor = "orangered";
+            isEmpty = true;
+        }
+
+        if (!isEmpty) {
+            if (form.namedItem("password2").value !== form.namedItem("password1").value) {
+                document.getElementById("error_msg").innerHTML = "Lösenorden matchar inte... Försök igen!";
+            } else {
+                var login_info = new FormData();
+                login_info.append("user_email", form.namedItem("email").value);
+                newServerAjaxCall("/check-user-exist", login_info, function (response) {
+                    if (response === "true") {
+                        grecaptcha.execute();
+                    } else {
+                        document.getElementById("error_msg").innerHTML = "Det finns redan ett konto kopplat till den angivna email adressen.";
+                    }
+                });
+            }
+        } else {
+            document.getElementById("error_msg").innerHTML = "Ett eller flera fält är tomma. Alla fält måste fyllas i!";
+        }
+    }
+
+    function on_register_submit() {
+        document.getElementById("register_form").submit();
+    }
+</script>

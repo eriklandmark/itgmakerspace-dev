@@ -1,0 +1,46 @@
+$max_mobile_width: 799px;
+
+$menu_icon_width: 31px;
+$menu_icon_height: 30px;
+
+$nav_bar_height: 50px;
+$footer_height: 70px;
+$footer_mobile_height: 100px;
+$nav_background_color: GRAY;
+
+body {
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  width: 100vw;
+  overflow-x: hidden;
+  min-height: 100vh;
+
+  p, h1, h2, h3, h4, h5, a, u, i {
+    color: black;
+    font-family: "Open Sans", sans-serif;
+  }
+}
+
+@import "parts/navigation_bar";
+@import "parts/inventory_search_field";
+@import "parts/categories_list";
+
+.main {
+  margin-top: $nav_bar_height;
+}
+
+@import "pages/index";
+@import "pages/inventory";
+@import "pages/login";
+@import "pages/register";
+@import "pages/my_loans";
+@import "pages/item_page";
+@import "pages/change_password";
+@import "pages/error_page";
+@import "pages/3d-skrivare";
+@import "pages/under_construction";
+
+@import "parts/footer";

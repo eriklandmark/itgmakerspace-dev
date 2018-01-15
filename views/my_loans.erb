@@ -1,0 +1,38 @@
+<% content_for :title do %>
+    Mina Lån
+<%end%>
+
+<article class="main" id="my_loans_main">
+    <h3>Här finns alla saker du har lånat:</h3>
+
+    <div id="loaned_items">
+
+        <%if loans_items.length <= 0%>
+            <h3>Du har inte lånat något.</h3>
+        <%else%>
+            <table>
+              <tr>
+                <td><h3 class="table_title name">Namn:</h3></td>
+                <td><h3 class="table_title quantity">Antal</h3></td>
+              </tr>
+            </table>
+            <%id = 0%>
+            <%date_id = 0%>
+            <% loans_items.each do |loan| %>
+                <%date_id += 1%>
+                <h4 class="date_paragraph" id="date_id_<%=date_id%>"> Saker lånat den <%=loan[:date]%></h4>
+                <table id="table_id_<%=date_id%>">
+                    <%items = loan[:items]%>
+                    <% items.each do |item| %>
+                        <%id += 1%>
+                        <tr id="table_row_<%=id%>">
+                            <td class="name"><a href="/items?item_id=<%=item[:item_id]%>" class="table_item"><%=item[:item]%></a></td>
+                            <td class="quantity" id="table_item_quantity_<%=id%>"><p class="table_item"><%=item[:quantity]%></p></td>
+                            <td><input type="button" value="Lämna tillbaka" onclick="delete_item(<%=item[:loan_id]%>,<%=item[:item_id]%>, <%=id%>, <%=date_id%>)"></td>
+                        </tr>
+                    <% end %>
+                </table>
+            <% end %>
+        <%end%>
+    </div>
+</article>

@@ -1,0 +1,55 @@
+#my_loans_main {
+  padding: 10px calc(10vw);
+  display: flex;
+  flex-direction: column;
+
+  #categories {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: calc(7vw);
+    top: 120px;
+  }
+
+  #loaned_items {
+    width: 100%;
+
+    .table_title {
+      margin: 5px 0 0 0;
+    }
+
+    .name {
+      width: 30vw;
+    }
+
+    .table_item {
+      margin: 0;
+    }
+
+    .table_row {
+      border-bottom: 2px solid lightgrey;
+      padding: 10px 0;
+    }
+
+    .quantity {
+      text-align: center;
+      width: 10vw;
+    }
+
+    .description {
+      width: 80%;
+    }
+
+    .date_paragraph {
+      margin: 20px 0 0 0;
+    }
+
+    input[type="button"] {
+      border: none;
+      background-color: lightgray;
+      padding: 5px 15px;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1em;
+    }
+  }
+}

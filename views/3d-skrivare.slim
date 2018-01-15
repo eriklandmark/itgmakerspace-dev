@@ -1,0 +1,75 @@
+- content_for :title do
+  | 3D Printers
+
+#printer-main.main
+  div.site_tree
+    div#list
+      h2 Innehåll
+      a href="#introduktion" Introduktion
+      a href="#hardvara" Hårdvara
+      a href="#material" Utskriftsmaterial
+      a href="#cura" Cura
+      a href="#tips" Tips
+
+  div#content
+    div#introduktion.content
+      h1 Introduktion
+    div#hardvara.content
+      h1 Hårdvara
+      img.img-float-right src="/images/wanhao_duplicator_i3.jpg"
+      h3 Wanhao Duplicator I3
+      p De 3D skrivare vi använder är Wanhaos Duplicator i3 som är en 3D skrivare som är enkla att använda och laga.
+      table
+        tr
+          td
+            h4 Byggvolym:
+          td
+            p 180mm x 180mm x 200mm
+        tr
+          td
+            h4 Utskriftshastighet:
+          td
+            p 20mm/s - 60mm/s
+        tr
+          td
+            h4 Temperatur:
+          td
+            p 180°C - 240°C
+        tr
+          td
+            h4 Material
+          td
+            p PLA och ABS
+      p Duplicator i3 är en FDM skrivare. FDM står för Fused Deposition Modeling, kort sammanfattat är det en metod för produktion. Man bygger upp en 3D figur med repitition av 2D lager. Efter ett antal 2D lager får man fram en 3D figur.
+      p Denna metod är effektiv och kan skapa former som andra metoder har svårt för. Men eftersom man lägger lager på lager bildas det svaga punkter. Man kan gämföra det med hur trädplankor är uppbyggda, att klyva paralellt med fibrerna är enkelt medans tvärs med fibrerna är svårare, samma sak är det för lagrerna i en utskrift.
+      h3 Utskriftshuvudet (Extruder / Hotend)
+      img.img-float-right src="/images/extruder.gif"
+      p Utskriftshuvudet är själva munstycket som sprutar ut plasten och lägger den på byggplattan. Plasten dras från spolen till munstycket med hjälp av en stepper motor som sitter rakt ovanför munstycket. Munstycket värms upp til önskad temperatur och gör plstaen mer rinning. Detta gör att en liten del plasten kan rinna ut ur munstycket oavsätt om extruder motorn är igång eller inte. Oftast vill man ta bort den överblivna plasten men gör inte det med händerna. Då bränner man sig rejält.
+
+      h3 Byggplata (Printer bed)
+      img.img-float-right src="/images/print_bed.jpg"
+      p Byggplattan eller på engelska 'Printer Bed' är den stora plattan i mitten av 3D-skrivaren som utskriftshuvudet lägger plasten på. För att plasten ska fastna bättre på plattan värmer man upp plattan till ca 60°C. Om hörnerna på utskriften släpper från byggplattan kan ett fonomen som kallas för warping uppstå. Eftersom plast krymper när den svalnar kan den krympa på fel sätt och istället för en platt båtten får man en böjd botten som kan förstöra hela utskriften. För att motvärka warping finns det två saker man ska tänka på. Att byggplattan är kalibrerad och att byggplattan är uppvärmed till rätt temperatur.
+      p Att kalibrera plattan menas med att man ser till att avståndet mellan byggplattan och själva munstycket är ca 1,5mm eller tjockleken på en bit av ett vanligt papper. För att kalibrera plattan finns det en skruv i varje hörne av plattan som skusterar höjden i det hörnet. Man kalibrerar lättast genom att ta och flytta utskriftshuvudet till det olika hörnerna och med en bit papper stoppa in mellan byggplattan och utskriftshuvudet och justera skruven under. Man är klar när man kan dra pappret fram och tillbaks men ändå känna ett motstånd i pappret, när utsrkiftshuvudet rispar mot pappret. Detta upprepar man vida alla 4 hörnerna. Det gör inget om det inte blir perfekt.
+    div#material.content
+      h1 Utskriftsmaterial
+      img#img_plaster src="/images/plaster.png"
+      p Det finns en hel del olika material som man kan skriva ut med. Du ser bara några få här åvan. Olika material kan vara bra för olika användningsområden. Några går att lösa upp i vatten och andra har bättre mekaniska egenskaper. De som vi använder i Makerspace är PLA enbart.
+      h3 PLA (Polylaktid eller polymjölksyra)
+      p PLA är en plast som är biologisk nedbrytbar, vilket innebär att den är miljövänlig till skillnad för andra plaster som t.ex ABS som är gjord utav rest produkter frå olja. PLA har en lägre smälltpunkt vilket gör att 3D skrivaren kräver inte lika mycket el, vilket är bra med tanke på hur många vi har. Annan anledning till att vi kör med PLA är för att den kommer i många olika färger och PLA kräver faktiskt inte än uppvärmd platta för att plasten ska fastna på byggplattan. Men utskriften blir bättre med en uppvärmd byggplatta. PLA är också billgit jämfört med de andra plasterna.
+      p Varför vi inte använder någon utav de andra plasterna är för att många utav dem antingen kräver ett annat munstycke som är hårdare eller så kräver den två utsrkiftshuvuden, vilket inte Duplicator i3 har.
+    div#cura.content
+      h1 Cura
+      p Cura är ett såkallat "slicing program". Cura omvandlar en 3D modell till instruktioner för 3D-skrivaren.
+    div#tips.content
+      h1 Tips
+      p Några tips som kan hjälpa för att få det perfekta resultatet:
+      ul
+        li
+          h5 Ha marginal!
+          p Ha marginal när ni CAD:ar på era modeller. 3D skrivarna har en tolerans på 0.2 mm &plusmn0.1mm
+        li
+          h5 Testa er fram med inställningarna på cura.
+          p Det är svårt att veta exakt vilka inställningar man ska ha. De som står åvan är riktlinjer för hur man kan tänka. Det bästa resiltatet får man genom trial and error.
+        li
+          h5 Kalibrera ALLTID plattan!
+          p För att få bästa resultat och slippa slösa en massa plast, kalibrera plattan varje gång du ska använda 3D skrivaren. Då har du högre chans på en lyckad utskrift.

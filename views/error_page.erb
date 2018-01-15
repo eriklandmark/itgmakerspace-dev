@@ -1,0 +1,11 @@
+<article class="main" id="error_page_main">
+    <div>
+        <h1>Oops! Något fel uppstod..</h1>
+        <%if error_code.length > 0%>
+            <h4>Fel kod: <%= error_code %></h4>
+        <%end%>
+        <p><%= error_code_msg %></p>
+    </div>
+</article>
+
+

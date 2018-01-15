@@ -1,0 +1,17 @@
+<script>
+    function onSubmit() {
+        console.log("test");
+        document.getElementById('demo-form').submit();
+    }
+</script>
+<style>
+  .grecaptcha-badge {
+    //display: none;
+  }
+</style>
+<div class="main">
+  <form id='demo-form' action='/test-2' method='post'>
+    <button class="g-recaptcha" data-sitekey="6LdrnTkUAAAAAG3TRNWKCFN9oMWSSP_Tp4wxqdVV" data-callback="onSubmit" data-badge="inline">Submit
+    </button>
+  </form>
+</div>
