@@ -1,0 +1,9 @@
+- content_for :title do
+  | Hem
+article#index_main.main
+  #header_img
+  #info
+    h1 Välkommen!
+    p#time_to_next_meeting
+script charset="utf-8" type="text/javascript"
+  | initializeCountdown('#{month + ' ' + day + ' ' + year + ' ' + hour}');

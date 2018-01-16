@@ -47,11 +47,11 @@ class App < Sinatra::Base
       end
     end
 
-    erb :index, :locals => {:day => day, :year => year, :month => month, :hour => hour, :started => started}
+    slim :index, :locals => {:day => day, :year => year, :month => month, :hour => hour, :started => started}
   end
 
   get '/login' do
-    erb :login, :locals => {:login_msg => nil}
+    slim :login, :locals => {:login_msg => nil}
   end
 
   post '/login' do
@@ -76,7 +76,7 @@ class App < Sinatra::Base
     if session[:user_email] == nil
       erb :register
     else
-      erb :error_page, :locals => {:error_code => '403', :error_code_msg => "Tyvärr! Du får inte tillgång till denna sida när du är inloggad.<br>Logga ut först för att få tillgång till denna sida."}
+      slim :error_page, :locals => {:error_code => '403', :error_code_msg => "Tyvärr! Du får inte tillgång till denna sida när du är inloggad.<br>Logga ut först för att få tillgång till denna sida."}
     end
   end
 
@@ -146,7 +146,7 @@ class App < Sinatra::Base
           end
         end
       end
-      erb :my_loans, :locals => {:loans_items => loans_items}
+      slim :my_loans, :locals => {:loans_items => loans_items}
     rescue
       redirect '/'
     end
@@ -154,6 +154,7 @@ class App < Sinatra::Base
 
   post '/check-user-information' do
     u = User.first(:email => params['user_email'].downcase)
+    p params['user_email']
     if u != nil
       if BCrypt::Password.new(u.password) == params['user_password']
         'true'
@@ -303,13 +304,13 @@ class App < Sinatra::Base
           inventory << item
         end
 
-        erb :inventory, :locals => {:inventory => inventory, :category_name => Category.first(:id => category).name, :search_term => search_term}
+        slim :inventory, :locals => {:inventory => inventory, :category_name => Category.first(:id => category).name, :search_term => search_term}
       else
         redirect "/inventory/#{db_inventory.first.id}"
       end
     else
       if search_term.length > 0
-        erb :inventory, :locals => {:search_term => search_term, :inventory => db_inventory, :category_name => Category.first(:id => category).name}
+        slim :inventory, :locals => {:search_term => search_term, :inventory => db_inventory, :category_name => Category.first(:id => category).name}
       else
         redirect '/inventory'
       end
@@ -330,7 +331,7 @@ class App < Sinatra::Base
           inventory_item_names << item[:name].to_s
         end
 
-        erb :item_page, :locals => {
+        slim :item_page, :locals => {
             :item_id => item.id,
             :item_name => item.name,
             :item_quantity => q,
@@ -350,20 +351,24 @@ class App < Sinatra::Base
   get '/change-password' do
     user = User.first(:email => session[:user_email])
     if user != nil
-      erb :change_password, :locals => {:user_email => params[:user_email]}
+      slim :change_password, :locals => {:user_email => params[:user_email]}
     else
-      error_msg("Någon försökte logga in med #{session[:user_email]} men hittade inte användaren!")
-      erb :change_password, :locals => {:error_code => '', :error_code_msg => 'Serverfel uppstod! Testa att logga ut och logga in igen!'}
+      error_msg("#{session[:user_email]} försökte ändra lösenord men fel uppstod: (404) User not found!")
+      slim :change_password, :locals => {:error_code => '', :error_code_msg => 'Serverfel uppstod! Testa att logga ut och logga in igen!'}
     end
   end
 
   post '/change-password' do
     begin
-      user = User.first(:email => session[:user_id])
+      user = User.first(:id => session[:user_id])
       if user != nil
         if BCrypt::Password.new(user.password) == params['user_password'] && params[:new_password_1] == params[:new_password_2]
           if user.update(:password => BCrypt::Password.create(params[:new_password_1]))
-            erb :login, :locals => {:login_msg => 'Ditt lösenord har ändrats! Nu är det bara att logga in igen.'}
+            session[:user_email] = nil
+            session[:user_full_name] = nil
+            session[:user_id] = nil
+
+            redirect '/login'
           end
         else
           'Wrong password!'

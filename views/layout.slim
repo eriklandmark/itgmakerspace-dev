@@ -1,23 +1,51 @@
 doctype html
 html
   javascript:
-      | var tlJsHost = ((window.location.protocol == "https:") ? "https://secure.comodo.com/" : "http://www.trustlogo.com/");
-      | document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
+      var tlJsHost = ((window.location.protocol == "https:") ? "https://secure.comodo.com/" : "http://www.trustlogo.com/");
+      document.write(unescape("%3Cscript src='" + tlJsHost + "trustlogo/javascript/trustlogo.js' type='text/javascript'%3E%3C/script%3E"));
   head
-    /! Global site tag (gtag.js) - Google Analytics
-    script async="" src="https://www.googletagmanager.com/gtag/js?id=UA-110240296-1"
-    javascript:
-        | window.dataLayer = window.dataLayer || [];
-        | function gtag() {dataLayer.push(arguments);}
-        | gtag('js', new Date());
-        | gtag('config', 'UA-110240296-1');
-    meta charset="UTF-8" /
-    meta content="width=device-width, initial-scale=1.0" name="viewport" /
-    link href="/css/main.css" rel="stylesheet" /
+    meta charset="UTF-8"
+    meta content="width=device-width, initial-scale=1.0" name="viewport"
+    link href="/css/main.css" rel="stylesheet"
     script src="/js/main.min.js"
     title
       | ITG Makerspace - #{yield_content :title}
   body
-    == erb :"parts/navigation_bar"
+    nav#desktop_nav
+      #left_nav
+        p.logga_text ITG Makerspace
+      #center_nav
+        .nav_wrapper_center
+          a#nav_title_home.nav_title href="/"  Hem
+          a.nav_title href="/inventory"  Lager
+          a.nav_title href="/3d-skrivare"  3D Skrivare
+      #right_nav
+        .nav_wrapper_right
+          - if session[:user_email] == "" || session[:user_email] == nil
+            a.nav_title href="/login"  Logga In
+            p |
+            a.nav_title href="/register"  Registrera
+          - else
+            p onclick="open_user_menu()" = session[:user_full_name]
+      #user_menu
+        #user_menu_top
+          #triangle
+        #user_menu_items
+          h3 Välkommen #{session[:user_full_name]}!
+          a href="/my-loans"  Mina lån
+          a href="/change-password"  Ändra lösenord
+          form#logout_form action="/logout" method="post"
+            input name="user_email" type="hidden" value="#{session[:user_email]}"
+            p onclick="document.getElementById('logout_form').submit()"  Logga ut
+
     == yield
-    == erb :"parts/footer"
+
+    footer#footer
+      a href="https://www.it-gymnasiet.se"
+        img#itg_logo alt="" src="/images/itgymnasiet_logo_horizontal.png" /
+      p Version: 2.3.0
+      p |
+      p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls
+      script
+        | TrustLogo("https://itgmaker.space/images/comodo_secure_seal_76x26_transp.png", "CL1", "none");
+      a#comodoTL href="https://www.positivessl.com/"  Positive SSL

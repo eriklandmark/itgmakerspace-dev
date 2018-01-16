@@ -1,6 +1,3 @@
-/**
- * Created by erikl on 2017-09-13.
- */
 function footer_event() {
     if (Math.max(document.body.scrollHeight, document.body.offsetHeight) > window.innerHeight) {
         document.getElementById("footer").style.position = "relative";
@@ -148,7 +145,6 @@ function delete_item(loan_id,item_id, id, table_id) {
     data.append("origin", 1);
     newServerAjaxCall("/remove-loan-item", data, function (response) {
         var obj = JSON.parse(response);
-        console.log(response);
         if (obj.status === "true") {
             var row = document.getElementById("table_item_quantity_" + id);
             var antal = parseInt(row.innerText);
@@ -162,10 +158,57 @@ function delete_item(loan_id,item_id, id, table_id) {
                     document.getElementById("date_id_" + table_id).parentNode.removeChild(document.getElementById("date_id_" + table_id));
                 }
             }
-            console.log("Worked");
             footer_event();
         } else {
             console.log("Did not work!");
+        }
+    });
+}
+
+function on_register_submit() {
+    document.getElementById("register_form").submit();
+}
+
+function on_login_submit() {
+    var login_info = new FormData();
+    login_info.append("user_email", document.getElementById("login_email").value);
+    login_info.append("user_password", document.getElementById("login_password").value);
+    newServerAjaxCall("/check-user-information", login_info, function (response) {
+        if (response === "true") {
+            document.getElementById("login_form").submit();
+        } else {
+            document.getElementById("error_msg").innerHTML = "Fel lösenord eller användarnamn!";
+        }
+    });
+}
+
+function login_form_keypress(event) {
+    if (event.keyCode === 13) {
+        if(document.getElementById("login_email").value !== "" && document.getElementById("login_password").value !== "") {
+            on_login_submit();
+        }
+    }
+}
+
+function on_change_pass_submit(email) {
+    var login_info = new FormData();
+    login_info.append("user_email", email);
+    login_info.append("user_password", document.getElementById("user_password").value);
+    if(document.getElementById("user_password").value === "" || document.getElementById("new_password_1").value === "" || document.getElementById("new_password_2").value === "") {
+        document.getElementById("error_msg").innerHTML = "Du har inte fyllt i alla fält än!";
+        return;
+    }
+
+    if(document.getElementById("new_password_1").value !== document.getElementById("new_password_2").value) {
+        document.getElementById("error_msg").innerHTML = "De nya lösenorden matchar inte! Försök igen.";
+        return;
+    }
+
+    newServerAjaxCall("/check-user-information", login_info, function (response) {
+        if (response === "true") {
+            document.getElementById("chg_pass_form").submit();
+        } else {
+            document.getElementById("error_msg").innerHTML = "Fel lösenord! Försök igen.";
         }
     });
 }

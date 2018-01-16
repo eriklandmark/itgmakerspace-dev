@@ -1,0 +1,16 @@
+- content_for :title do
+  = item_name
+== erb :"parts/category_list", :locals => {:categories => get_categories, :category_list_id => 1}
+article#item_main.main
+  == erb :"parts/inventory_search_field", :locals => {:inventory_item_names => inventory_item_names}
+  h4#item_category
+    | Kategori:
+    a href="/inventory?category=#{item_category}" = item_category_name
+  div
+    #item_image
+      img alt="TBA" src="/product_images/product_#{item_id}.jpg" /
+    #item_header
+      h2= item_name
+      h4
+        | Antal i lager: #{item_quantity}
+    p#item_description= item_description

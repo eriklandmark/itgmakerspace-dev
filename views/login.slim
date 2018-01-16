@@ -1,0 +1,12 @@
+- content_for :title do
+  | Logga In
+article#login_main.main
+  - if login_msg != nil
+    p= login_msg
+  - else
+    p Logga in för att se vilka saker du har lånat:
+  form#login_form action="/login" enctype="application/x-www-form-urlencoded" method="post" onkeypress="login_form_keypress(event)"
+    input#login_email name="user_email" placeholder="Email" type="email" /
+    input#login_password name="user_password" placeholder="lösenord" type="password" /
+    input#login_submit_button onclick="on_login_submit()" type="button" value=("Logga in") /
+  p#error_msg
