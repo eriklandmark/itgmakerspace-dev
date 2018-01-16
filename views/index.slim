@@ -2,8 +2,11 @@
   | Hem
 article#index_main.main
   #header_img
-  #info
+  #timer
     h1 Välkommen!
+    h4 Nästa tillfälle om:
     p#time_to_next_meeting
-script charset="utf-8" type="text/javascript"
-  | initializeCountdown('#{month + ' ' + day + ' ' + year + ' ' + hour}');
+  #info
+    p Vårt Makerspace är en plats fyllt med en hel del utrustning, prylar och ett stort intresse inom allt om elektronik, mekatronik och design, ända upp till maskin learning.
+javascript:
+  initializeCountdown("#{month + ' ' + day + ' ' + year + ' ' + hour}");

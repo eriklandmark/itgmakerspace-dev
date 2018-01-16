@@ -11,7 +11,7 @@ html
     title
       | ITG Makerspace - #{yield_content :title}
   body
-    nav#desktop_nav
+    nav#nav_desktop
       #left_nav
         p.logga_text ITG Makerspace
       #center_nav
@@ -37,15 +37,40 @@ html
           form#logout_form action="/logout" method="post"
             input name="user_email" type="hidden" value="#{session[:user_email]}"
             p onclick="document.getElementById('logout_form').submit()"  Logga ut
+    nav#nav_mobile
+      h5 ITG Makerspace
+      p = yield_content(:title)
+    img.menu_icons alt="" src="/icons/account_icon.svg"
+    #mobile_menu_icon onclick="on_menu_icon_click()"
+      canvas#menu_icon_top_bar
+      canvas#menu_icon_middle_bar
+      canvas#menu_icon_bottom_bar
+    #mobile_menu
+      #logo_text_div
+        img src="/images/itg_logo_square.png"
+        h3 Makerspace
+      #mobile_menu_links
+        a href="/"
+          h4 Hem
+        a href="/inventory"
+          h4 Lager
+        a href="/3d-skrivare"
+          h4 3D Skrivare
 
     == yield
 
-    footer#footer
+    footer#footer_desktop
       a href="https://www.it-gymnasiet.se"
-        img#itg_logo alt="" src="/images/itgymnasiet_logo_horizontal.png" /
+        img.itg_logo alt="" src="/images/itgymnasiet_logo_horizontal.png"
       p Version: 2.3.0
       p |
-      p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls
-      script
-        | TrustLogo("https://itgmaker.space/images/comodo_secure_seal_76x26_transp.png", "CL1", "none");
-      a#comodoTL href="https://www.positivessl.com/"  Positive SSL
+      p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
+      javascript:
+          TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL1", "none");
+    footer#footer_mobile
+      p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
+      p Version: 2.3.0
+      javascript:
+        TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL2", "none");
+      a href="https://www.it-gymnasiet.se"
+        img.itg_logo alt="" src="/images/itgymnasiet_logo_horizontal.png"

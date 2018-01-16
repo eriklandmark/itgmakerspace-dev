@@ -13,13 +13,13 @@ class App < Sinatra::Base
   not_found do
     status 404
     error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (404)")
-    erb :error_page, :locals => {:error_code => '404', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
+    slim :error_page, :locals => {:error_code => '404', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
   end
 
   error do
     status 500
     error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men det uppstod ett fel på serversidan.! (#{status})")
-    body(erb :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'})
+    body(slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'})
   end
 
   get '/' do
@@ -74,7 +74,7 @@ class App < Sinatra::Base
 
   get '/register' do
     if session[:user_email] == nil
-      erb :register
+      slim :register
     else
       slim :error_page, :locals => {:error_code => '403', :error_code_msg => "Tyvärr! Du får inte tillgång till denna sida när du är inloggad.<br>Logga ut först för att få tillgång till denna sida."}
     end
@@ -101,15 +101,15 @@ class App < Sinatra::Base
 
         user = User.create(new_user)
         if user.save
-          erb :login, :locals => {:login_msg => "#{params['fullname']} är nu registrerad! Logga in nedan."}
+          slim :login, :locals => {:login_msg => "#{params['fullname']} är nu registrerad! Logga in nedan."}
         end
       else
-        erb :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
+        slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
       end
     else
       status 500
       error_msg("-- #{request.ip} försökte registrera sig men blev stoppad av reCAPTCHA. (#{status})")
-      body(erb :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'})
+      body(slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'})
     end
   end
 
@@ -154,7 +154,6 @@ class App < Sinatra::Base
 
   post '/check-user-information' do
     u = User.first(:email => params['user_email'].downcase)
-    p params['user_email']
     if u != nil
       if BCrypt::Password.new(u.password) == params['user_password']
         'true'
@@ -542,11 +541,11 @@ class App < Sinatra::Base
     if params["id"] == "500"
       status 500
       error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men det uppstod ett fel på serversidan.! (#{status})")
-      erb :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'}
+      slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'}
     else
       status 404
       error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (404)")
-      erb :error_page, :locals => {:error_code => '404', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
+      slim :error_page, :locals => {:error_code => '404', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
     end
   end
 

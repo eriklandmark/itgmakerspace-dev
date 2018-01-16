@@ -12,6 +12,13 @@ footer {
   margin-top: 5vh;
   color: white;
 
+  @media (max-width: $max_mobile_width) {
+    flex-direction: column;
+    height: 250px;
+    justify-content: space-around;
+    text-align: center;
+  }
+
   p {
     color: white;
     font-size: 0.8em;
@@ -23,7 +30,28 @@ footer {
     margin-right: 20px;
   }
 
-  #itg_logo {
+  .itg_logo {
     height: 15px;
+  }
+}
+
+#footer_desktop {
+  @media (max-width: $max_mobile_width) {
+    display: none;
+  }
+
+  @media (min-width: $max_mobile_width + 1px) {
+    display: flex;
+  }
+}
+
+#footer_mobile {
+  @media (max-width: $max_mobile_width) {
+    display: flex;
+    margin: 0;
+  }
+
+  @media (min-width: $max_mobile_width + 1px) {
+    display: none;
   }
 }

@@ -1,8 +1,61 @@
+var mobile_menu_open = false;
+
+function on_menu_icon_click() {
+    var top_bar = document.getElementById("menu_icon_top_bar");
+    var middle_bar = document.getElementById("menu_icon_middle_bar");
+    var bottom_bar = document.getElementById("menu_icon_bottom_bar");
+    var mobile_menu = document.getElementById("mobile_menu");
+    if (mobile_menu_open) {
+        top_bar.className = "top_bar_animate_out";
+        top_bar.style.transform = "rotate(0deg)";
+        middle_bar.className = "middle_bar_animate_out";
+        middle_bar.style.opacity = "1";
+        bottom_bar.className = "bottom_bar_animate_out";
+        bottom_bar.style.transform = "rotate(0deg)";
+        mobile_menu.className = "mobile_menu_animate_out";
+        mobile_menu.style.right = "-120vw";
+        document.body.style.overflow = "scroll";
+        mobile_menu_open = false;
+    } else {
+        top_bar.className = "top_bar_animate_in";
+        top_bar.style.transform = "rotate(-45deg)";
+        middle_bar.className = "middle_bar_animate_in";
+        middle_bar.style.opacity = "0";
+        bottom_bar.className = "bottom_bar_animate_in";
+        bottom_bar.style.transform = "rotate(45deg)";
+        mobile_menu.className = "mobile_menu_animate_in";
+        mobile_menu.style.right = "0";
+        document.body.style.overflow = "hidden";
+        mobile_menu_open = true;
+    }
+}
+
+function close_mobile_menu() {
+    if(mobile_menu_open) {
+        var top_bar = document.getElementById("menu_icon_top_bar");
+        var middle_bar = document.getElementById("menu_icon_middle_bar");
+        var bottom_bar = document.getElementById("menu_icon_bottom_bar");
+        var mobile_menu = document.getElementById("mobile_menu");
+        top_bar.className = "top_bar_animate_out";
+        top_bar.style.transform = "rotate(0deg)";
+        middle_bar.className = "middle_bar_animate_out";
+        middle_bar.style.opacity = "1";
+        bottom_bar.className = "bottom_bar_animate_out";
+        bottom_bar.style.transform = "rotate(0deg)";
+        mobile_menu.className = "mobile_menu_animate_out";
+        mobile_menu.style.right = "-120vw";
+        document.body.style.overflow = "scroll";
+        mobile_menu_open = false;
+    }
+}
+
 function footer_event() {
     if (Math.max(document.body.scrollHeight, document.body.offsetHeight) > window.innerHeight) {
-        document.getElementById("footer").style.position = "relative";
+        document.getElementById("footer_desktop").style.position = "relative";
+        document.getElementById("footer_mobile").style.position = "relative";
     } else {
-        document.getElementById("footer").style.position = "absolute";
+        document.getElementById("footer_desktop").style.position = "absolute";
+        document.getElementById("footer_mobile").style.position = "absolute";
     }
 }
 
@@ -19,7 +72,7 @@ function initializeCountdown(endtime) {
     if (t <= 0) {
         clock.innerHTML = "Mötet har startat!"
     } else {
-        clock.innerHTML = 'Näste tilfälle om ' + days + ' dag(ar), ' +
+        clock.innerHTML = days + ' dag(ar), ' +
             hours + ' timmar, ' +
             minutes + ' minuter och ' +
             seconds + " sekunder.";
@@ -33,7 +86,7 @@ function initializeCountdown(endtime) {
                 clearInterval(timeinterval);
                 clock.innerHTML = "Mötet har startat!"
             } else {
-                clock.innerHTML = 'Näste tilfälle om ' + days + ' dag(ar), ' +
+                clock.innerHTML = days + ' dag(ar), ' +
                     hours + ' timmar, ' +
                     minutes + ' minuter och ' +
                     seconds + " sekunder.";

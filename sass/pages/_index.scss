@@ -3,6 +3,11 @@
   flex-direction: column;
   align-items: center;
   width: 100vw;
+  height: calc(100vh - #{$nav_bar_height});
+
+  @media (max-width: $max_mobile_width) {
+
+  }
 
   #header_img {
     width: 100%;
@@ -11,8 +16,8 @@
     background-size: cover;
   }
 
-  #info {
-    height: 20vh;
+  #timer {
+    min-height: 20vh;
     padding: 50px;
     background-color: white;
     border-radius: 20px;
@@ -22,5 +27,25 @@
     align-items: center;
     justify-content: center;
     box-shadow: 0 0 30px 0;
+    text-align: center;
+
+    @media (max-width: $max_mobile_width) {
+      max-width: 60vw;
+      padding: 30px;
+
+      h4 {
+        margin: 0;
+      }
+
+      p {
+        margin: 5px;
+      }
+    }
+  }
+
+  #info {
+    margin-top: 5vh;
+    width: 80vw;
+    text-align: center;
   }
 }
