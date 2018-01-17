@@ -1,13 +1,14 @@
 - content_for :title do
   | Lager
-== erb :"parts/category_list"
 article#inventory_main.main
   == erb :"parts/inventory_search_field"
+  #category_box
+    == erb :"parts/category_list"
   #inventory
     - if category_name == "Alla"
       - if search_term != ""
-        h2 | Sökning: "#{search_term}"
-        p | Här är sökresultatet för "#{search_term}" som finns i lagret. Lager statusen är inte garanterad.
+        h2 Sökning: "#{search_term}"
+        p Här är sökresultatet för "#{search_term}" som finns i lagret. Lager statusen är inte garanterad.
       - else
         h2 Alla saker:
         p Här kan du hitta all elektronik, prylar, byggsatser m.m som finns att använda. Lager statusen är självklart inte garanterad.
@@ -17,26 +18,27 @@ article#inventory_main.main
     p Obs: Bilder och informationstexter till alla föremålen kommer att läggas till i efterhand.
     #sorting
       h4 Sortera efter:
-      p Namn:
-      u onclick="open_link('sort_after=name_asc')" A..Ö
-      u onclick="open_link('sort_after=name_desc')" Ö..A
-      p |
-      p Antal:
-      u onclick="open_link('sort_after=quantity_asc')" Stigande
-      u onclick="open_link('sort_after=quantity_desc')" Fallande
+      .sorting_options
+        p Namn:
+        u onclick="open_link('sort_after=name_asc')" A..Ö
+        u onclick="open_link('sort_after=name_desc')" Ö..A
+      .sorting_options
+        p Antal:
+        u onclick="open_link('sort_after=quantity_asc')" Stigande
+        u onclick="open_link('sort_after=quantity_desc')" Fallande
+    .item_divider
     #inventory_items
       - if inventory != nil && inventory.length > 0
         - inventory.each do |item|
           .item
             .item_picture
               a href="/inventory/#{item[:id]}"
-                img alt="TBA" src="product_images/product_#{item[:id]}.jpg" /
+                img alt="TBA" src="product_images/product_#{item[:id]}.jpg"
             .item_info
-              p.item_quantity
-                | I lager: #{item[:quantity]} st.
+              p.item_quantity I lager: #{item[:quantity]} st.
               a href="/inventory/#{item[:id]}" = item[:name]
               p.item_description= item[:description][0..100]
           .item_divider
       - else
         - if search_term != nil && search_term != ''
-          h3 style=("text-align: center")  Inget kunde hittas!
+          h3#search_nothing_found_text Inget kunde hittas!

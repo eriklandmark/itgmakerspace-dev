@@ -21,6 +21,10 @@
     flex-direction: row;
     width: 50%;
 
+    @media (max-width: $max_mobile_width) {
+      width: 90%;
+    }
+
     input[type="search"] {
       font-family: "Open Sans", sans-serif;
       font-size: 1em;
