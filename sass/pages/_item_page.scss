@@ -9,7 +9,8 @@
   }
 
   #category_box {
-    padding: 0 20px;
+    width: 250px;
+    position: fixed;
 
     @media (max-width: $max_mobile_width) {
       display: none;
@@ -20,10 +21,13 @@
     padding-top: 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    width: calc(100vw - 300px);
+    margin-left: 250px;
 
     @media (max-width: $max_mobile_width) {
       width: 90vw;
+      margin: 0;
+      align-items: center;
     }
 
     #item_info {
