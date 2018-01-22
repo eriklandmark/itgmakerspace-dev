@@ -766,6 +766,8 @@ nav {
     #printer-main #content .img-float-right {
       float: right;
       width: 25vw; }
+    #printer-main #content .article {
+      overflow: auto; }
   #printer-main .content {
     padding-top: 50px; }
 
