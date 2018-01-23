@@ -1,20 +1,40 @@
 - content_for :title do
   | Lager
+
 article#inventory_main.main
   == erb :"parts/inventory_search_field"
   #category_box
     == erb :"parts/category_list"
   #inventory
-    - if category_name == "Alla"
-      - if search_term != ""
-        h2 Sökning: "#{search_term}"
-        p Här är sökresultatet för "#{search_term}" som finns i lagret. Lager statusen är inte garanterad.
+    section
+      - if category_name == "Alla"
+        - if search_term != ""
+          .title_bar
+            .title
+              h2 Sökning: "#{search_term}"
+            - if !session[:permission_level].nil? && session[:permission_level] >= 2
+              .actions
+                a href="/add-inventory-item"
+                  button Lägg till artikel
+          p Här är sökresultatet för "#{search_term}" som finns i lagret. Lager statusen är inte garanterad.
+        - else
+          .title_bar
+            .title
+              h2 Alla saker:
+            - if !session[:permission_level].nil? && session[:permission_level] >= 2
+              .actions
+                a href="/add-inventory-item"
+                  button Lägg till artikel
+          p Här kan du hitta all elektronik, prylar, byggsatser m.m som finns att använda. Lager statusen är självklart inte garanterad.
       - else
-        h2 Alla saker:
-        p Här kan du hitta all elektronik, prylar, byggsatser m.m som finns att använda. Lager statusen är självklart inte garanterad.
-    - else
-      h2 Kategori: #{category_name}
-      p Här finns alla saker i lagret inom kategorin #{category_name}. Lagerstatusen är inte granterad.
+        .title_bar
+          .title
+            h2 Kategori: #{category_name}
+          - if !session[:permission_level].nil? && session[:permission_level] >= 2
+            .actions
+              a href="/add-inventory-item"
+                button Lägg till artikel
+        p Här finns alla saker i lagret inom kategorin #{category_name}. Lagerstatusen är inte granterad.
     p Obs: Bilder och informationstexter till alla föremålen kommer att läggas till i efterhand.
     #sorting
       h4 Sortera efter:

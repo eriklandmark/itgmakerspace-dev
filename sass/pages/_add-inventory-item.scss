@@ -1,0 +1,106 @@
+#add-inventory-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  #main {
+    display: flex;
+    flex-direction: column;
+    width: 60vw;
+
+    h4 {
+      margin: 10px 0 15px 0;
+    }
+
+    input[type=submit], input[type=button], input[type=reset] {
+      background-color: lightgray;
+      border: none;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1.3em;
+      padding: 10px 20px;
+      margin: 0 10px;
+    }
+
+    input[type=file] {
+      width: 100%;
+      border: 2px solid gray;
+      border-radius: 5px;
+      background-color: white;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1.2em;
+      padding: 5px;
+    }
+
+    input[type=text], select, input[type=number] {
+      border: 2px solid gray;
+      border-radius: 5px;
+      background-color: white;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1.2em;
+      padding: 5px;
+      width: 100%;
+    }
+
+    #actions {
+      display: flex;
+      flex-direction: row-reverse;
+      width: 100%;
+    }
+
+    #upper {
+      display: flex;
+      flex-direction: row;
+
+      #product_image_div {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+
+        section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          border: solid black 2px;
+          width: 25vw;
+          height: 25vw;
+          border-radius: 5px;
+
+          img {
+            width: 100%;
+          }
+
+          img[alt] {
+            font-family: "Open Sans", sans-serif;
+            font-size: 2em;
+            text-align: center;
+          }
+        }
+      }
+
+      #product_info_div {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+    }
+
+    #lower {
+      padding: 20px;
+      margin-top: 20px;
+      textarea {
+        width: 100%;
+        height: 300px;
+        border: 2px solid gray;
+        border-radius: 5px;
+        background-color: white;
+        margin: 5px 0;
+        font-family: "Open Sans", sans-serif;
+        font-size: 1.2em;
+        padding: 5px;
+        resize: vertical;
+      }
+    }
+  }
+}

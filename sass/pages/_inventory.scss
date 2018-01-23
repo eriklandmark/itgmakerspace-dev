@@ -33,6 +33,36 @@
       margin-left: 0;
     }
 
+    section {
+      display: flex;
+      flex-direction: column;
+
+      .title_bar {
+        display: flex;
+        flex-direction: row;
+
+        .title {
+          width: 100%;
+        }
+
+        .actions {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center;
+
+          button {
+            background-color: lightgray;
+            border: none;
+            font-family: "Open Sans", sans-serif;
+            font-size: 1.3em;
+            padding: 10px 20px;
+            white-space: nowrap;
+          }
+        }
+      }
+    }
+
     #inventory_items {
       width: 100%;
       display: flex;

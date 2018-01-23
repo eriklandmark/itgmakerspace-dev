@@ -62,6 +62,7 @@ class App < Sinatra::Base
         session[:user_email] = params['user_email']
         session[:user_full_name] = user.name
         session[:user_id] = user.id
+        session[:permission_level] = user.permission_level
 
         redirect '/'
       else
@@ -114,14 +115,11 @@ class App < Sinatra::Base
   end
 
   post '/logout' do
-    user = User.first(:email => params['user_email'])
-    if user != nil
-      session[:user_email] = nil
-      session[:user_full_name] = nil
-      redirect '/'
-    else
-      params['user_email'] + " doesn't exist!"
-    end
+    session[:user_email] = nil
+    session[:user_full_name] = nil
+    session[:user_id] = nil
+    session[:permission_level] = nil
+    redirect '/'
   end
 
   get '/my-loans' do
@@ -366,6 +364,7 @@ class App < Sinatra::Base
             session[:user_email] = nil
             session[:user_full_name] = nil
             session[:user_id] = nil
+            session[:permission_level] = nil
 
             redirect '/login'
           end
@@ -552,5 +551,121 @@ class App < Sinatra::Base
   get '/3d-skrivare' do
     slim :'3d-skrivare'
     #slim :under_construction
+  end
+
+  get '/add-inventory-item' do
+    unless session[:user_id].nil? && session[:permission_level].nil?
+      if session[:permission_level] >= 2
+        return slim(:"add-inventory-item", :locals => {
+            :item_id => "-1",
+            :item_name => "",
+            :item_category => 0,
+            :item_quantity => 1,
+            :item_description => ""
+        })
+      end
+    end
+
+    status 403
+    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
+    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+  end
+
+  get '/edit-inventory-item/:item_id' do
+    unless session[:user_id].nil? && session[:permission_level].nil?
+      if session[:permission_level] >= 2
+        item = Inventory_Item.first(:id => params["item_id"])
+
+        if item.nil?
+          p "hej"
+          status 404
+        else
+          return slim(:"add-inventory-item", :locals => {
+              :item_id => params["item_id"],
+              :item_name => item.name,
+              :item_category => item.category,
+              :item_quantity => item.quantity,
+              :item_description => item.description
+          })
+        end
+      end
+    end
+
+    status 403
+    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
+    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+  end
+
+  post '/update-inventory-item' do
+    unless session[:user_id].nil? && session[:permission_level].nil?
+      if session[:permission_level] >= 2
+        if params["item-id"] == "-1"
+          id = Inventory_Item.max(:id).to_i + 1
+          item = Inventory_Item.create({
+              :id => id,
+              :name => params["item-name"],
+              :quantity => params["item-quantity"].to_i,
+              :description => params["item-description"],
+              :category => params["item-category"]
+          })
+
+          stock_item = Stock_Inventory_Item.create({
+              :id => id,
+              :quantity => params["item-quantity"]
+          })
+
+          if item.save && stock_item.save
+            redirect '/inventory'
+          else
+            status 500
+          end
+        else
+          item = Inventory_Item.first(:id => params["item-id"])
+          stock_item = Stock_Inventory_Item.first(:id => params["item-id"])
+
+          unless item.nil? && stock_item.nil?
+            item_update = {
+                :name => params["item-name"],
+                :quantity => params["item-quantity"].to_i,
+                :description => params["item-description"],
+                :category => params["item-category"]
+            }
+
+            stock_item_update = {
+                :quantity => params["item-quantity"].to_i,
+            }
+
+            if item.update(item_update) && stock_item.update(stock_item_update)
+              redirect "/inventory/#{params["item-id"]}"
+            end
+          end
+        end
+      end
+    end
+
+    status 403
+    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
+    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+  end
+
+  get '/delete-inventory-item/:item_id' do
+    unless session[:user_id].nil? && session[:permission_level].nil?
+      if session[:permission_level] >= 2
+        unless params["item_id"].nil?
+          item = Inventory_Item.first(:id => params["item_id"])
+          stock_item = Inventory_Item.first(:id => params["item_id"])
+
+          if item.destroy && stock_item.destroy
+            redirect '/inventory'
+          else
+            status 500
+          end
+        end
+      end
+    end
+
+    status 403
+    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
+    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
   end
 end

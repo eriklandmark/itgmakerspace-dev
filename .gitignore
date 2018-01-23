@@ -1,3 +1,3 @@
 .idea
 itgmakerspace-dev.iml
-database/database.sqlite
+database/*.sqlite

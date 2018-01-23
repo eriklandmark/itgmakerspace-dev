@@ -6,9 +6,20 @@ article#item_main.main
   #category_box
     == erb :"parts/category_list", :locals => {:categories => get_categories, :category_list_id => 1}
   #item_box
-    h4#item_category
-      | Kategori:
-      a href="/inventory?category=#{item_category}" = item_category_name
+    - if !session[:permission_level].nil? && session[:permission_level] >= 2
+      section
+        div
+          h4#item_category
+            | Kategori:
+            a href="/inventory?category=#{item_category}" = " " + item_category_name
+        form action="/delete-inventory-item/#{item_id}" method="get"
+          input type="submit" value="Ta bort artikel"
+        form action="/edit-inventory-item/#{item_id}" method="get"
+          input type="submit" value="Redigera artikel"
+    - else
+      h4#item_category
+        | Kategori:
+        a href="/inventory?category=#{item_category}" = " " + item_category_name
     div#item_info
       #item_image
         img alt="TBA" src="/product_images/product_#{item_id}.jpg" /

@@ -44,4 +44,5 @@ class User
   property :email, String, :required => true
   property :password, BCryptHash, :required => true
   property :security_key, String
+  property :permission_level, Integer, :default => 1
 end

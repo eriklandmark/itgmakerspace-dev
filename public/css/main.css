@@ -434,6 +434,26 @@ nav {
       #inventory_main #inventory {
         width: 90vw;
         margin-left: 0; } }
+    #inventory_main #inventory section {
+      display: flex;
+      flex-direction: column; }
+      #inventory_main #inventory section .title_bar {
+        display: flex;
+        flex-direction: row; }
+        #inventory_main #inventory section .title_bar .title {
+          width: 100%; }
+        #inventory_main #inventory section .title_bar .actions {
+          display: flex;
+          flex-direction: row;
+          justify-content: center;
+          align-items: center; }
+          #inventory_main #inventory section .title_bar .actions button {
+            background-color: lightgray;
+            border: none;
+            font-family: "Open Sans", sans-serif;
+            font-size: 1.3em;
+            padding: 10px 20px;
+            white-space: nowrap; }
     #inventory_main #inventory #inventory_items {
       width: 100%;
       display: flex;
@@ -613,6 +633,22 @@ nav {
     @media (max-width: 799px) {
       #item_main #category_box {
         display: none; } }
+  #item_main section {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    width: 100%; }
+    #item_main section div {
+      width: 100%; }
+    #item_main section #item_category {
+      margin: 0; }
+    #item_main section input[type=submit] {
+      background-color: lightgray;
+      border: none;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1.3em;
+      padding: 10px 20px;
+      margin-left: 20px; }
   #item_main #item_box {
     padding-top: 20px;
     display: flex;
@@ -785,6 +821,85 @@ nav {
     justify-content: center;
     background-color: lightgray;
     padding: 40px; }
+
+#add-inventory-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center; }
+  #add-inventory-item #main {
+    display: flex;
+    flex-direction: column;
+    width: 60vw; }
+    #add-inventory-item #main h4 {
+      margin: 10px 0 15px 0; }
+    #add-inventory-item #main input[type=submit], #add-inventory-item #main input[type=button], #add-inventory-item #main input[type=reset] {
+      background-color: lightgray;
+      border: none;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1.3em;
+      padding: 10px 20px;
+      margin: 0 10px; }
+    #add-inventory-item #main input[type=file] {
+      width: 100%;
+      border: 2px solid gray;
+      border-radius: 5px;
+      background-color: white;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1.2em;
+      padding: 5px; }
+    #add-inventory-item #main input[type=text], #add-inventory-item #main select, #add-inventory-item #main input[type=number] {
+      border: 2px solid gray;
+      border-radius: 5px;
+      background-color: white;
+      font-family: "Open Sans", sans-serif;
+      font-size: 1.2em;
+      padding: 5px;
+      width: 100%; }
+    #add-inventory-item #main #actions {
+      display: flex;
+      flex-direction: row-reverse;
+      width: 100%; }
+    #add-inventory-item #main #upper {
+      display: flex;
+      flex-direction: row; }
+      #add-inventory-item #main #upper #product_image_div {
+        padding: 20px;
+        display: flex;
+        flex-direction: column; }
+        #add-inventory-item #main #upper #product_image_div section {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          border: solid black 2px;
+          width: 25vw;
+          height: 25vw;
+          border-radius: 5px; }
+          #add-inventory-item #main #upper #product_image_div section img {
+            width: 100%; }
+          #add-inventory-item #main #upper #product_image_div section img[alt] {
+            font-family: "Open Sans", sans-serif;
+            font-size: 2em;
+            text-align: center; }
+      #add-inventory-item #main #upper #product_info_div {
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        width: 100%; }
+    #add-inventory-item #main #lower {
+      padding: 20px;
+      margin-top: 20px; }
+      #add-inventory-item #main #lower textarea {
+        width: 100%;
+        height: 300px;
+        border: 2px solid gray;
+        border-radius: 5px;
+        background-color: white;
+        margin: 5px 0;
+        font-family: "Open Sans", sans-serif;
+        font-size: 1.2em;
+        padding: 5px;
+        resize: vertical; }
 
 footer {
   display: flex;
