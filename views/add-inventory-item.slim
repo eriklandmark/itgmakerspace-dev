@@ -16,7 +16,7 @@
         #product_image_div
           section
             - if item_id == "-1"
-              img#product_image src="#" onchange="show_preview_image()" alt="Artikelbild saknas.."
+              img#product_image src="#" alt="Artikelbild saknas.."
             - else
               img#product_image src="/product_images/product_#{item_id}.jpg" onchange="show_preview_image()" alt="Artikelbild saknas.."
         #product_info_div

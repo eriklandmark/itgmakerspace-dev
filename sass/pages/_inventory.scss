@@ -99,6 +99,12 @@
           img {
             width: 100%;
           }
+
+          img[alt] {
+            font-family: "Open Sans", sans-serif;
+            font-size: 1em;
+            text-align: center;
+          }
         }
 
         .item_info {
