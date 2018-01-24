@@ -677,9 +677,7 @@ nav {
         align-items: center;
         justify-content: center;
         margin: 0 40px 30px 0;
-        background-color: white;
-        border: solid grey 2px;
-        border-radius: 5px; } }
+        background-color: white; } }
     @media (max-width: 799px) {
       #item_main #item_box #item_image {
         width: 200px;
@@ -689,9 +687,7 @@ nav {
         align-items: center;
         justify-content: center;
         margin-bottom: 20px;
-        background-color: white;
-        border: solid grey 2px;
-        border-radius: 5px; } }
+        background-color: white; } }
     #item_main #item_box #item_image img {
       width: 100%; }
     #item_main #item_box #item_header {

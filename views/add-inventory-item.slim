@@ -3,8 +3,11 @@
 
 #add-inventory-item.main
   #main
-    h2 Lägg till ny artikel
-    form#update_item_form action="/update-inventory-item" method="post"
+    - if item_id == "-1"
+      h2 Lägg till ny artikel
+    - else
+      h2 Redigera artikel: #{item_name}
+    form#update_item_form action="/update-inventory-item" method="post" enctype="multipart/form-data"
       input type="hidden" name="item-id" value="#{item_id}"
       #actions
         input type="submit" value="Spara"

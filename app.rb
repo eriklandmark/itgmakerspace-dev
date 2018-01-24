@@ -614,7 +614,19 @@ class App < Sinatra::Base
               :quantity => params["item-quantity"]
           })
 
+          p params[:"item-picture"]
+
           if item.save && stock_item.save
+            unless params[:"item-picture"].nil?
+              if File.exists?("./public/product_images/product_#{params["item-id"]}.jpg")
+                File.delete("./public/product_images/product_#{params["item-id"]}.jpg")
+              end
+
+              File.open("./public/product_images/product_#{params["item-id"]}.jpg", "w") do |file|
+                file.write(params['item-picture'][:tempfile].read)
+              end
+            end
+
             redirect '/inventory'
           else
             status 500
@@ -636,6 +648,16 @@ class App < Sinatra::Base
             }
 
             if item.update(item_update) && stock_item.update(stock_item_update)
+              unless params[:"item-picture"].nil?
+                if File.exists?("./public/product_images/product_#{params["item-id"]}.jpg")
+                  File.delete("./public/product_images/product_#{params["item-id"]}.jpg")
+                end
+
+                File.open("./public/product_images/product_#{params["item-id"]}.jpg", "w") do |file|
+                  file.write(params[:"item-picture"][:tempfile].read)
+                end
+              end
+
               redirect "/inventory/#{params["item-id"]}"
             end
           end
@@ -653,9 +675,13 @@ class App < Sinatra::Base
       if session[:permission_level] >= 2
         unless params["item_id"].nil?
           item = Inventory_Item.first(:id => params["item_id"])
-          stock_item = Inventory_Item.first(:id => params["item_id"])
+          stock_item = Stock_Inventory_Item.first(:id => params["item_id"])
 
           if item.destroy && stock_item.destroy
+            if File.exists?("./public/product_images/product_#{params["item_id"]}.jpg")
+              File.delete("./public/product_images/product_#{params["item_id"]}.jpg")
+            end
+
             redirect '/inventory'
           else
             status 500

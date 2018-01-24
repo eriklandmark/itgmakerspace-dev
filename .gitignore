@@ -1,3 +1,4 @@
 .idea
 itgmakerspace-dev.iml
 database/*.sqlite
+public/product_images
