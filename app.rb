@@ -178,123 +178,24 @@ class App < Sinatra::Base
 
   get '/inventory' do
     inventory = []
-    db_inventory = nil
-    category_limit = Category.max(:id)
-    order_of = nil
-    order_dir = ''
     category = '0'
-    search_term = ''
+    search_term = params[:search_term]
 
-    if params.length == 0
-      db_inventory = Inventory_Item.all(:order => [:name.asc])
-    else
-      if params[:search_term] != nil && params[:search_term] != ''
-        search_term = params[:search_term]
-        order_of = nil
-        order_dir = ''
-        if params[:sort_after] != nil
-          if params[:sort_after] == 'name_asc'
-            order_of = 'name'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'name_desc'
-            order_of = 'name'
-            order_dir = 'desc'
-          elsif params[:sort_after] == 'quantity_asc'
-            order_of = 'quantity'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'quantity_desc'
-            order_of = 'quantity'
-            order_dir = 'desc'
-          else
-            order_of = 'quantity'
-            order_dir = 'desc'
-          end
-        end
-        if order_of != nil
-          if order_dir == 'asc'
-            db_inventory = Inventory_Item.all(:name.like => '%' + search_term + '%', :order => [order_of.to_sym.asc])
-          elsif order_dir == 'desc'
-            db_inventory = Inventory_Item.all(:name.like => '%' + search_term + '%', :order => [order_of.to_sym.desc])
-          else
-            db_inventory = Inventory_Item.all(:name.like => '%' + search_term + '%', :order => [order_of.to_sym.asc])
-          end
-        else
-          db_inventory = Inventory_Item.all(:name.like => '%' + search_term + '%')
-        end
-      else
-        if params[:sort_after] != nil
-          if params[:sort_after] == 'name_asc'
-            order_of = 'name'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'name_desc'
-            order_of = 'name'
-            order_dir = 'desc'
-          elsif params[:sort_after] == 'quantity_asc'
-            order_of = 'quantity'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'quantity_desc'
-            order_of = 'quantity'
-            order_dir = 'desc'
-          end
-        end
-
-        if params[:category] != nil && params[:category].is_i?
-          if params[:category].to_i < 1 || params[:category].to_i > category_limit
-            if order_of != nil
-              if order_dir == 'asc'
-                db_inventory = Inventory_Item.all(:order => [order_of.to_sym.asc])
-              elsif order_dir == 'desc'
-                db_inventory = Inventory_Item.all(:order => [order_of.to_sym.desc])
-              else
-                db_inventory = Inventory_Item.all(:order => [order_of.to_sym.asc])
-                end
-            else
-              db_inventory = Inventory_Item.all(:order => [:name.asc])
-            end
-          else
-            category = params[:category]
-            if order_of != nil
-              if order_dir == 'asc'
-                db_inventory = Inventory_Item.all(:category => params[:category], :order => [order_of.to_sym.asc])
-              elsif order_dir == 'desc'
-                db_inventory = Inventory_Item.all(:category => params[:category], :order => [order_of.to_sym.desc])
-              else
-                db_inventory = Inventory_Item.all(:category => params[:category], :order => [order_of.to_sym.asc])
-              end
-            else
-              db_inventory = Inventory_Item.all(:category => params[:category])
-            end
-          end
-        else
-          if order_of != nil
-            if order_dir == 'asc'
-              db_inventory = Inventory_Item.all(:order => [order_of.to_sym.asc])
-            elsif order_dir == 'desc'
-              db_inventory = Inventory_Item.all(:order => [order_of.to_sym.desc])
-            else
-              db_inventory = Inventory_Item.all(:order => [order_of.to_sym.asc])
-            end
-          else
-            db_inventory = Inventory_Item.all(:order => [:name.asc])
-          end
-        end
-      end
+    if search_term.nil?
+      search_term = ""
     end
+
+    db_inventory = Inventory_Item.get_inventory(params: params)
 
     if db_inventory != nil && db_inventory.length > 0
       if !(search_term.length > 0 && db_inventory.length < 2)
         db_inventory.each do |item|
-          q = 0
-          if item.quantity > 0
-            q = item.quantity
-          end
-
           item = {
               :id => item.id,
               :name => item.name,
               :barcode => item.barcode,
               :description => item.description.nil? || item.description == '' ? 'Description to be added' : item.description,
-              :quantity => q,
+              :quantity => item.quantity,
               :category => item.category
           }
 
