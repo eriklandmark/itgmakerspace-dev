@@ -64,7 +64,7 @@ module DatabaseHandler
 
     def self.first(condition = {})
       if condition.empty?
-        element = $database.execute("SELECT * FROM #{@table_name} WHERE #{condition.keys.first} = ?", condition[condition.keys.first]).first
+        element = $database.execute("SELECT * FROM #{@table_name}").first
       else
         element = $database.execute("SELECT * FROM #{@table_name} WHERE #{condition.keys.first} = ?", condition[condition.keys.first]).first
       end
@@ -77,6 +77,31 @@ module DatabaseHandler
           values[attribute[:name]] = element[index]
         end
         DatabaseHandler::DatabaseObject.new(@table_name, values)
+      end
+    end
+
+    def self.create(element)
+      begin
+        columns = ""
+        values = []
+        question_marks = ""
+        element.each_with_index do |key, index|
+          columns += "#{key[0]}"
+          question_marks += "?"
+          values << key[1].to_s
+          if index < element.length - 1
+            columns += ", "
+            question_marks += ", "
+          end
+        end
+
+        if $database.execute("INSERT INTO #{@table_name} (#{columns}) VALUES (#{question_marks})", *values).empty?
+          true
+        end
+        false
+      rescue => e
+        p e
+        false
       end
     end
   end
