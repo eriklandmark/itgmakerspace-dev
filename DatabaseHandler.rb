@@ -146,6 +146,24 @@ module DatabaseHandler
         false
       end
     end
+
+    def self.max(attribute, *condition)
+      begin
+        $database.execute("SELECT MAX(#{attribute.to_s}) FROM #{@table_name}")[0][0].to_i
+      rescue => e
+        p e
+        nil
+      end
+    end
+
+    def self.min(attribute, *condition)
+      begin
+        $database.execute("SELECT MIN(#{attribute.to_s}) FROM #{@table_name}")[0][0].to_i
+      rescue => e
+        p e
+        nil
+      end
+    end
   end
 
   class DatabaseObject

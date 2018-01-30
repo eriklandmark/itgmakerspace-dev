@@ -27,4 +27,5 @@ class Inventory < DatabaseHandler::Table
   attribute "category", "Integer"
 end
 
-pp Categories.all({:name => {:like => "batt"}})
+pp Categories.min(:id)
+#pp Categories.all({:name => {:like => "batt"}})
