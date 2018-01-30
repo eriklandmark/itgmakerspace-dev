@@ -27,8 +27,4 @@ class Inventory < DatabaseHandler::Table
   attribute "category", "Integer"
 end
 
-#p Categories.create({:id => 22, :name => "Testing"})
-
-p Categories.first({:name => "Testing"}).delete
-user = Categories.all
-pp user
+pp Categories.all({:name => {:like => "batt"}})

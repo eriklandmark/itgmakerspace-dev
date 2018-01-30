@@ -1,3 +1,9 @@
+class String
+  def like
+    p self
+  end
+end
+
 module DatabaseHandler
 
   def self.init(db_path:)
@@ -36,10 +42,22 @@ module DatabaseHandler
 
     def self.all(condition = {})
       begin
+        con = ""
+        values = []
         unless condition.empty?
           con = "WHERE "
           condition.each_with_index do |key, index|
-            con += "#{key[0]} = #{key[1]}"
+            if key[1].is_a?(Hash)
+              if key[1].keys.first == :like
+                con += "#{key[0]} like ?"
+                values << "%#{key[1][:like]}%"
+              else
+                p "fail"
+              end
+            else
+              con += "#{key[0]} = #{key[1]}"
+              values << key[1].to_s
+            end
             if index < condition.length - 1
               con += " and "
             end
@@ -47,13 +65,12 @@ module DatabaseHandler
         end
 
         elements = []
-        p "SELECT * FROM #{@table_name} #{con}"
-        $database.execute("SELECT * FROM #{@table_name} #{con}").each do |element|
-          values = {}
+        $database.execute("SELECT * FROM #{@table_name} #{con}", *values).each do |element|
+          element_values = {}
           @attributes.each_with_index do |attribute, index|
-            values[attribute[:name]] = element[index]
+            element_values[attribute[:name]] = element[index]
           end
-          elements << DatabaseHandler::DatabaseObject.new(@table_name, values)
+          elements << DatabaseHandler::DatabaseObject.new(@table_name, element_values)
         end
         elements
       rescue => e
@@ -66,10 +83,29 @@ module DatabaseHandler
       if condition.empty?
         element = $database.execute("SELECT * FROM #{@table_name}").first
       else
-        element = $database.execute("SELECT * FROM #{@table_name} WHERE #{condition.keys.first} = ?", condition[condition.keys.first]).first
+        con = "WHERE "
+        values = []
+        condition.each_with_index do |key, index|
+          if key[1].is_a?(Hash)
+            if key[1].keys.first == :like
+              con += "#{key[0]} like ?"
+              values << "%#{key[1][:like]}%"
+            else
+              p "fail"
+            end
+          else
+            con += "#{key[0]} = #{key[1]}"
+            values << key[1].to_s
+          end
+          if index < condition.length - 1
+            con += " and "
+          end
+        end
+
+        element = $database.execute("SELECT * FROM #{@table_name} #{con}", *values).first
       end
 
-      if element.nil?
+      if element.nil? || element.empty?
         nil
       else
         values = {}
