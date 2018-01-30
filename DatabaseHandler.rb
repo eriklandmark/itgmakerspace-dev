@@ -51,8 +51,11 @@ module DatabaseHandler
               if key[1].keys.first == :like
                 con += "#{key[0]} like ?"
                 values << "%#{key[1][:like]}%"
+              elsif key[1].keys.first == :is
+                con += "#{key[0]} is ?"
+                values << "#{key[1][:like]}"
               else
-                p "fail"
+                puts "'#{key[1].keys.first.to_s}' is not a comparator."
               end
             else
               con += "#{key[0]} = #{key[1]}"
@@ -90,8 +93,11 @@ module DatabaseHandler
             if key[1].keys.first == :like
               con += "#{key[0]} like ?"
               values << "%#{key[1][:like]}%"
+            elsif key[1].keys.first == :is
+              con += "#{key[0]} is ?"
+              values << "#{key[1][:like]}"
             else
-              p "fail"
+              puts "'#{key[1].keys.first.to_s}' is not a comparator."
             end
           else
             con += "#{key[0]} = #{key[1]}"
