@@ -40,35 +40,54 @@ module DatabaseHandler
       $database.execute(str)
     end
 
-    def self.all(condition = {})
+    def self.all(*condition)
       begin
         con = ""
         values = []
+        order_of = ""
         unless condition.empty?
-          con = "WHERE "
-          condition.each_with_index do |key, index|
-            if key[1].is_a?(Hash)
-              if key[1].keys.first == :like
-                con += "#{key[0]} like ?"
-                values << "%#{key[1][:like]}%"
-              elsif key[1].keys.first == :is
-                con += "#{key[0]} is ?"
-                values << "#{key[1][:like]}"
+          con = "WHERE"
+          values = []
+          i = 0
+          condition.first.each do |key|
+            if key[0] == :order
+              i += 1
+            end
+          end
+          condition.first.each_with_index do |key, index|
+            if key[0] == :order
+              order_of = " ORDER BY #{key[1][0]}"
+              if key[1][1] == :asc
+                order_of += " ASC"
+              elsif key[1][1] == :desc
+                order_of += " DESC"
               else
-                puts "'#{key[1].keys.first.to_s}' is not a comparator."
+                order_of += " ASC"
               end
             else
-              con += "#{key[0]} = ?"
-              values << key[1].to_s
-            end
-            if index < condition.length - 1
-              con += " and "
+              if key[1].is_a?(Hash)
+                if key[1].keys.first == :like
+                  con += " #{key[0]} like ?"
+                  values << "%#{key[1][:like]}%"
+                elsif key[1].keys.first == :is
+                  con += " #{key[0]} is ?"
+                  values << "#{key[1][:like]}"
+                else
+                  puts "'#{key[1].keys.first.to_s}' is not a comparator."
+                end
+              else
+                con += " #{key[0]} = ?"
+                values << key[1].to_s
+              end
+              if index < condition.first.length - (1 + i)
+                con += " and"
+              end
             end
           end
         end
 
         elements = []
-        $database.execute("SELECT * FROM #{@table_name} #{con}", *values).each do |element|
+        $database.execute("SELECT * FROM #{@table_name} #{con}#{order_of}", *values).each do |element|
           element_values = {}
           @attributes.each_with_index do |attribute, index|
             element_values[attribute[:name]] = element[index]
@@ -153,20 +172,20 @@ module DatabaseHandler
         values = []
         unless condition.empty?
           con = "WHERE "
-          condition.first.each_with_index do |key, index|
-            if key[1].is_a?(Hash)
-              if key[1].keys.first == :like
-                con += "#{key[0]} like ?"
-                values << "%#{key[1][:like]}%"
-              elsif key[1].keys.first == :is
-                con += "#{key[0]} is ?"
-                values << "#{key[1][:like]}"
+          condition.each_with_index do |key, index|
+            if key[key.keys.first].is_a?(Hash)
+              if key.keys.first == :like
+                con += "#{key.keys.first.to_s} like ?"
+                values << "%#{key[:like]}%"
+              elsif key.keys.first == :is
+                con += "#{key.keys.first.to_s} is ?"
+                values << "#{key[:like]}"
               else
-                puts "'#{key[1].keys.first.to_s}' is not a comparator."
+                puts "'#{key.keys.first.to_s}' is not a comparator."
               end
             else
-              con += "#{key[0]} = ?"
-              values << key[1].to_s
+              con += "#{key.keys.first.to_s} = ?"
+              values << key[key.keys.first].to_s
             end
             if index < condition.length - 1
               con += " and "

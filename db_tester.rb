@@ -27,5 +27,5 @@ class Inventory < DatabaseHandler::Table
   attribute "category", "Integer"
 end
 
-pp Inventory.max(:quantity, {:category => "2"})
+pp Inventory.all(:category => "2", :name => {:like => "l"}, :order => [:name, :desc])
 #pp Categories.all({:name => {:like => "batt"}})
