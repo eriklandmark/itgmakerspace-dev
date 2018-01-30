@@ -58,7 +58,7 @@ module DatabaseHandler
                 puts "'#{key[1].keys.first.to_s}' is not a comparator."
               end
             else
-              con += "#{key[0]} = #{key[1]}"
+              con += "#{key[0]} = ?"
               values << key[1].to_s
             end
             if index < condition.length - 1
@@ -100,7 +100,7 @@ module DatabaseHandler
               puts "'#{key[1].keys.first.to_s}' is not a comparator."
             end
           else
-            con += "#{key[0]} = #{key[1]}"
+            con += "#{key[0]} = ?"
             values << key[1].to_s
           end
           if index < condition.length - 1
@@ -149,7 +149,32 @@ module DatabaseHandler
 
     def self.max(attribute, *condition)
       begin
-        $database.execute("SELECT MAX(#{attribute.to_s}) FROM #{@table_name}")[0][0].to_i
+        con = ""
+        values = []
+        unless condition.empty?
+          con = "WHERE "
+          condition.first.each_with_index do |key, index|
+            if key[1].is_a?(Hash)
+              if key[1].keys.first == :like
+                con += "#{key[0]} like ?"
+                values << "%#{key[1][:like]}%"
+              elsif key[1].keys.first == :is
+                con += "#{key[0]} is ?"
+                values << "#{key[1][:like]}"
+              else
+                puts "'#{key[1].keys.first.to_s}' is not a comparator."
+              end
+            else
+              con += "#{key[0]} = ?"
+              values << key[1].to_s
+            end
+            if index < condition.length - 1
+              con += " and "
+            end
+          end
+        end
+
+        $database.execute("SELECT MAX(#{attribute.to_s}) FROM #{@table_name} #{con}", *values)[0][0].to_i
       rescue => e
         p e
         nil
@@ -158,7 +183,32 @@ module DatabaseHandler
 
     def self.min(attribute, *condition)
       begin
-        $database.execute("SELECT MIN(#{attribute.to_s}) FROM #{@table_name}")[0][0].to_i
+        con = ""
+        values = []
+        unless condition.empty?
+          con = "WHERE "
+          condition.first.each_with_index do |key, index|
+            if key[1].is_a?(Hash)
+              if key[1].keys.first == :like
+                con += "#{key[0]} like ?"
+                values << "%#{key[1][:like]}%"
+              elsif key[1].keys.first == :is
+                con += "#{key[0]} is ?"
+                values << "#{key[1][:like]}"
+              else
+                puts "'#{key[1].keys.first.to_s}' is not a comparator."
+              end
+            else
+              con += "#{key[0]} = ?"
+              values << key[1].to_s
+            end
+            if index < condition.length - 1
+              con += " and "
+            end
+          end
+        end
+
+        $database.execute("SELECT MIN(#{attribute.to_s}) FROM #{@table_name} #{con}", *values)[0][0].to_i
       rescue => e
         p e
         nil
