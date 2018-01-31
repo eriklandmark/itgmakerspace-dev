@@ -55,7 +55,7 @@ class App < Sinatra::Base
   end
 
   post '/login' do
-    user = User.first(:email => params['user_email'].downcase)
+    user = Users.first(:email => params['user_email'].downcase)
     if user != nil
       if BCrypt::Password.new(user.password) == params['user_password']
         puts params['user_email'] + ' logged in!'
@@ -91,7 +91,7 @@ class App < Sinatra::Base
     end
 
     if success
-      u = User.first(:email => params['email'].downcase)
+      u = Users.first(:email => params['email'].downcase)
       if u == nil && params['password1'] == params['password2']
         new_user = {
             :email => params['email'].downcase,
@@ -100,9 +100,10 @@ class App < Sinatra::Base
             :birth_date => params['birth']
         }
 
-        user = User.create(new_user)
-        if user.save
+        if Users.create(new_user)
           slim :login, :locals => {:login_msg => "#{params['fullname']} är nu registrerad! Logga in nedan."}
+        else
+          "fail"
         end
       else
         slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
@@ -125,9 +126,9 @@ class App < Sinatra::Base
   get '/my-loans' do
     begin
       loans_items = []
-      user_id = User.first(:email => session[:user_email]).id
-      user_loans = Loan.all(:user_id => user_id, :order => [:loan_id.asc])
-      total_of_user_loans = Loan.max(:loan_id, :user_id => user_id)
+      user_id = Users.first(:email => session[:user_email]).id
+      user_loans = Loans.all(:user_id => user_id, :order => [:loan_id, :asc])
+      total_of_user_loans = Loans.max(:loan_id, :user_id => user_id)
 
       if total_of_user_loans != nil
         total_of_user_loans.times do |id|
@@ -151,7 +152,7 @@ class App < Sinatra::Base
   end
 
   post '/check-user-information' do
-    u = User.first(:email => params['user_email'].downcase)
+    u = Users.first(:email => params['user_email'].downcase)
     if u != nil
       if BCrypt::Password.new(u.password) == params['user_password']
         'true'
@@ -164,7 +165,7 @@ class App < Sinatra::Base
   end
 
   post '/check-user-exist' do
-    u = User.first(:email => params['user_email'].downcase)
+    u = Users.first(:email => params['user_email'].downcase)
     if u == nil
       'true'
     else
@@ -185,7 +186,7 @@ class App < Sinatra::Base
       search_term = ""
     end
 
-    db_inventory = Inventory_Item.get_inventory(params: params)
+    db_inventory = Inventory.get_inventory(params: params)
 
     if db_inventory != nil && db_inventory.length > 0
       if !(search_term.length > 0 && db_inventory.length < 2)
@@ -217,7 +218,7 @@ class App < Sinatra::Base
 
   get '/inventory/:item_id' do
     if params[:item_id] != nil && params[:item_id] != ''
-      item = Inventory_Item.first(:id => params[:item_id])
+      item = Inventory.first(:id => params[:item_id])
       if item != nil
         q = 0
         if item.quantity > 0
@@ -225,8 +226,8 @@ class App < Sinatra::Base
         end
 
         inventory_item_names = []
-        Inventory_Item.all(:order => [:name.asc]).each do |item|
-          inventory_item_names << item[:name].to_s
+        Inventory.all(:order => [:name, :asc]).each do |item|
+          inventory_item_names << item.name
         end
 
         slim :item_page, :locals => {
@@ -235,7 +236,7 @@ class App < Sinatra::Base
             :item_quantity => q,
             :item_description => item.description.nil? || item.description == '' ? 'Description to be added' : item.description,
             :item_category => item.category.nil? ? 0 : item.category,
-            :item_category_name => item.category.nil? ? "Alla" : Category.first(:id => item.category).name,
+            :item_category_name => item.category.nil? ? "Alla" : Categories.first(:id => item.category).name,
             :inventory_item_names => inventory_item_names
         }
       else
@@ -247,7 +248,7 @@ class App < Sinatra::Base
   end
 
   get '/change-password' do
-    user = User.first(:email => session[:user_email])
+    user = Users.first(:email => session[:user_email])
     if user != nil
       slim :change_password, :locals => {:user_email => params[:user_email]}
     else
@@ -258,7 +259,7 @@ class App < Sinatra::Base
 
   post '/change-password' do
     begin
-      user = User.first(:id => session[:user_id])
+      user = Users.first(:id => session[:user_id])
       if user != nil
         if BCrypt::Password.new(user.password) == params['user_password'] && params[:new_password_1] == params[:new_password_2]
           if user.update(:password => BCrypt::Password.create(params[:new_password_1]))
@@ -280,7 +281,7 @@ class App < Sinatra::Base
 
   post '/auth' do
     response = {:status => 'false', :status_msg => ''}
-    user = User.first(:email => params['email'].downcase)
+    user = Users.first(:email => params['email'].downcase)
     if user != nil
       if BCrypt::Password.new(user.password) == params['password']
         response[:status] = 'true'
@@ -302,7 +303,7 @@ class App < Sinatra::Base
     security_key = params['security_key']
     user_id = params['user_id']
     items = params['items']
-    loan_id = Loan.max(:loan_id)
+    loan_id = Loans.max(:loan_id)
 
     if loan_id == nil
       loan_id = 1
@@ -310,7 +311,7 @@ class App < Sinatra::Base
       loan_id += 1
     end
 
-    user = User.first(:id => user_id)
+    user = Users.first(:id => user_id)
 
     if user == nil
       return "User doesn't exists!"
@@ -332,7 +333,7 @@ class App < Sinatra::Base
           :item_id => item['item_id'],
           :quantity => item['quantity']
       }
-      if !Loan.create(new_loan).save
+      if !Loans.create(new_loan).save
         return 'Item did not save!'
       end
 
@@ -348,10 +349,10 @@ class App < Sinatra::Base
     security_key = params['security_key']
     user_id = params['user_id']
     response = {:status => 'false', :status_msg => ''}
-    user = User.first(:id => user_id)
+    user = Users.first(:id => user_id)
     if user != nil && user.security_key == security_key
       items = []
-      Loan.all(:user_id => user_id, :order => [:loan_id]).each do |loan|
+      Loans.all(:user_id => user_id, :order => [:loan_id]).each do |loan|
         items << {:quantity => loan.quantity, :item_id => loan.item_id, :loan_id => loan.loan_id, :date_loaned => loan.date_loaned}
       end
       response[:status] = 'true'
@@ -373,13 +374,13 @@ class App < Sinatra::Base
       item_id = params['item_id'].to_i
       loan_id = params['loan_id'].to_i
       quantity = params['quantity'].to_i
-      user = User.first(:id => user_id)
+      user = Users.first(:id => user_id)
       p origin
       if user != nil
         if origin == 2
           security_key = params['security_key']
           if user.security_key == security_key
-            item = Loan.first(:item_id => item_id, :loan_id => loan_id)
+            item = Loans.first(:item_id => item_id, :loan_id => loan_id)
             if item != nil
               if item.quantity > quantity
                 if item.update(:quantity => (item.quantity - quantity))
@@ -396,7 +397,7 @@ class App < Sinatra::Base
             end
           end
         elsif origin == 1
-          item = Loan.first(:item_id => item_id, :loan_id => loan_id)
+          item = Loans.first(:item_id => item_id, :loan_id => loan_id)
           if item != nil
             if item.quantity > quantity
               if item.update(:quantity => (item.quantity - quantity))
@@ -423,10 +424,10 @@ class App < Sinatra::Base
   post '/remove-all-loan-item' do
     user_id = params['user_id'].to_i
     security_key = params['security_key']
-    user = User.first(:id => user_id)
+    user = Users.first(:id => user_id)
     if user != nil
       if user.security_key == security_key
-        Loan.all(:user_id => user_id).each do |loan|
+        Loans.all(:user_id => user_id).each do |loan|
           if !loan.destroy
             return "false"
           end
@@ -475,7 +476,7 @@ class App < Sinatra::Base
   get '/edit-inventory-item/:item_id' do
     unless session[:user_id].nil? && session[:permission_level].nil?
       if session[:permission_level] >= 2
-        item = Inventory_Item.first(:id => params["item_id"])
+        item = Inventory.first(:id => params["item_id"])
 
         if item.nil?
           p "hej"
@@ -501,8 +502,8 @@ class App < Sinatra::Base
     unless session[:user_id].nil? && session[:permission_level].nil?
       if session[:permission_level] >= 2
         if params["item-id"] == "-1"
-          id = Inventory_Item.max(:id).to_i + 1
-          item = Inventory_Item.create({
+          id = Inventory.max(:id).to_i + 1
+          item = Inventory.create({
               :id => id,
               :name => params["item-name"],
               :quantity => params["item-quantity"].to_i,
@@ -510,7 +511,7 @@ class App < Sinatra::Base
               :category => params["item-category"]
           })
 
-          stock_item = Stock_Inventory_Item.create({
+          stock_item = Stock_Inventory.create({
               :id => id,
               :quantity => params["item-quantity"]
           })
@@ -533,8 +534,8 @@ class App < Sinatra::Base
             status 500
           end
         else
-          item = Inventory_Item.first(:id => params["item-id"])
-          stock_item = Stock_Inventory_Item.first(:id => params["item-id"])
+          item = Inventory.first(:id => params["item-id"])
+          stock_item = Stock_Inventory.first(:id => params["item-id"])
 
           unless item.nil? && stock_item.nil?
             item_update = {
@@ -575,8 +576,8 @@ class App < Sinatra::Base
     unless session[:user_id].nil? && session[:permission_level].nil?
       if session[:permission_level] >= 2
         unless params["item_id"].nil?
-          item = Inventory_Item.first(:id => params["item_id"])
-          stock_item = Stock_Inventory_Item.first(:id => params["item_id"])
+          item = Inventory.first(:id => params["item_id"])
+          stock_item = Stock_Inventory.first(:id => params["item_id"])
 
           if item.destroy && stock_item.destroy
             if File.exists?("./public/product_images/product_#{params["item_id"]}.jpg")

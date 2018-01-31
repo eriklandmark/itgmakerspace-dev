@@ -37,7 +37,7 @@ end
 
 def get_categories
   categories = []
-  Category.all(:order => [:name.asc]).each do |category|
+  Categories.all(:order => [:name, :asc]).each do |category|
     if category.id != 0
       categories << {:category_id => category.id, :category_name => category.name}
     end
@@ -47,12 +47,13 @@ end
 
 def get_inventory_names
   categories = []
-  Category.all.each do |category|
+  Categories.all.each do |category|
+    p category.name
     categories << category.name
   end
   inventory_item_names = []
-  Inventory_Item.all(:order => [:name.asc]).each do |item|
-    inventory_item_names << [item[:name].to_s, categories[item.category]]
+  Inventory.all(:order => [:name, :asc]).each do |item|
+    inventory_item_names << [item.name, categories[item.category]]
   end
   inventory_item_names
 end
@@ -60,7 +61,7 @@ end
 def update_inventory_items
   item_ids = []
   loans = []
-  all_loans = Loan.all
+  all_loans = Loans.all
   if all_loans.length >= 1
     all_loans.each do |loan|
       if !item_ids.include?(loan.item_id)
@@ -70,7 +71,7 @@ def update_inventory_items
 
     item_ids.each do |id|
       q = 0
-      c_loans = Loan.all(:item_id => id)
+      c_loans = Loans.all(:item_id => id)
       c_loans.each do |loan|
         q = q + loan.quantity
       end
@@ -78,19 +79,19 @@ def update_inventory_items
     end
 
     loans.each do |loan|
-      item = Inventory_Item.first(:id => loan[:item_id])
-      stock_item = Stock_Inventory_Item.first(:id => loan[:item_id])
+      item = Inventory.first(:id => loan[:item_id])
+      stock_item = Stock_Inventory.first(:id => loan[:item_id])
       item.update(:quantity => (stock_item.quantity - loan[:quantity]))
     end
   else
-    Inventory_Item.all.each do |item|
-      item.update(:quantity => (Stock_Inventory_Item.first(:id => item.id).quantity))
+    Inventory.all.each do |item|
+      item.update(:quantity => (Stock_Inventory.first(:id => item.id).quantity))
     end
   end
 end
 
 def delete_inventory_item(item_id:, quantity:)
-  item = Inventory_Item.first(:id => item_id)
+  item = Inventory.first(:id => item_id)
   if item != nil
     return item.update(:quantity => (item.quantity.to_i - quantity.to_i))
   else
@@ -99,7 +100,7 @@ def delete_inventory_item(item_id:, quantity:)
 end
 
 def add_inventory_item(item_id:, quantity:)
-  item = Inventory_Item.first(:id => item_id)
+  item = Inventory.first(:id => item_id)
   if item != nil
     return item.update(:quantity => (item.quantity.to_i + quantity.to_i))
   else

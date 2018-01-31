@@ -8,6 +8,7 @@ require 'rack/rewrite'
 require "net/https"
 require "uri"
 
+require_relative 'DatabaseHandler'
 require_relative 'app'
 require_relative 'lib'
 require_relative 'database/models'
@@ -16,10 +17,8 @@ register Sinatra::DefaultCharset
 
 configure :development do
   puts 'In Development Environment'
-  DataMapper::Logger.new($stdout, :debug)
-  DataMapper.setup(:default, "sqlite:///#{Dir.pwd}/database/database.sqlite")
 
-  DataMapper.finalize.auto_upgrade!
+  DatabaseHandler.init(db_path: "database/database.sqlite")
   update_inventory_items
 
   run App
@@ -38,13 +37,12 @@ end
 configure :production do
   puts 'In Production Environment'
 
-  DataMapper.setup(:default, "sqlite:///#{Dir.pwd}/database/database.sqlite")
-  DataMapper.finalize.auto_upgrade!
+  DatabaseHandler.init(db_path: "database/database.sqlite")
   update_inventory_items
 
   fork() do
     Rack::Server.start({
-        :Port => 8080,
+        :Port => 80,
         :Host => '0.0.0.0',
         :SSLEnable => false,
         :app => HTTPServer

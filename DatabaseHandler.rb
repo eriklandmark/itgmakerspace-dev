@@ -46,13 +46,16 @@ module DatabaseHandler
         values = []
         order_of = ""
         unless condition.empty?
-          con = "WHERE"
+          con = ""
           values = []
           i = 0
           condition.first.each do |key|
             if key[0] == :order
               i += 1
             end
+          end
+          if i < condition.first.length
+            con = " WHERE"
           end
           condition.first.each_with_index do |key, index|
             if key[0] == :order
@@ -156,10 +159,8 @@ module DatabaseHandler
           end
         end
 
-        if $database.execute("INSERT INTO #{@table_name} (#{columns}) VALUES (#{question_marks})", *values).empty?
-          true
-        end
-        false
+        $database.execute("INSERT INTO #{@table_name} (#{columns}) VALUES (#{question_marks})", *values)
+        true
       rescue => e
         p e
         false
