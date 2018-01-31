@@ -42,7 +42,7 @@ class Inventory < DatabaseHandler::Table
   attribute "category", "Integer"
 
   def self.get_inventory(params:)
-    category_limit = Category.max(:id)
+    category_limit = Categories.max(:id)
     order_of = nil
     order_dir = ''
     db_inventory = nil
@@ -117,27 +117,27 @@ class Inventory < DatabaseHandler::Table
           else
             if order_of != nil
               if order_dir == 'asc'
-                db_inventory = Inventory_Item.all(:category => params[:category], :order => [order_of.to_sym, :asc])
+                db_inventory = Inventory.all(:category => params[:category], :order => [order_of.to_sym, :asc])
               elsif order_dir == 'desc'
-                db_inventory = Inventory_Item.all(:category => params[:category], :order => [order_of.to_sym, :desc])
+                db_inventory = Inventory.all(:category => params[:category], :order => [order_of.to_sym, :desc])
               else
-                db_inventory = Inventory_Item.all(:category => params[:category], :order => [order_of.to_sym, :asc])
+                db_inventory = Inventory.all(:category => params[:category], :order => [order_of.to_sym, :asc])
               end
             else
-              db_inventory = Inventory_Item.all(:category => params[:category])
+              db_inventory = Inventory.all(:category => params[:category])
             end
           end
         else
           if order_of != nil
             if order_dir == 'asc'
-              db_inventory = Inventory_Item.all(:order => [order_of.to_sym, :asc])
+              db_inventory = Inventory.all(:order => [order_of.to_sym, :asc])
             elsif order_dir == 'desc'
-              db_inventory = Inventory_Item.all(:order => [order_of.to_sym, :desc])
+              db_inventory = Inventory.all(:order => [order_of.to_sym, :desc])
             else
-              db_inventory = Inventory_Item.all(:order => [order_of.to_sym, :asc])
+              db_inventory = Inventory.all(:order => [order_of.to_sym, :asc])
             end
           else
-            db_inventory = Inventory_Item.all(:order => [:name, :asc])
+            db_inventory = Inventory.all(:order => [:name, :asc])
           end
         end
       end

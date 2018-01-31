@@ -48,7 +48,6 @@ end
 def get_inventory_names
   categories = []
   Categories.all.each do |category|
-    p category.name
     categories << category.name
   end
   inventory_item_names = []

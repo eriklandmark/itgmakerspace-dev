@@ -203,13 +203,13 @@ class App < Sinatra::Base
           inventory << item
         end
 
-        slim :inventory, :locals => {:inventory => inventory, :category_name => Category.first(:id => category).name, :search_term => search_term}
+        slim :inventory, :locals => {:inventory => inventory, :category_name => Categories.first(:id => category).name, :search_term => search_term}
       else
         redirect "/inventory/#{db_inventory.first.id}"
       end
     else
       if search_term.length > 0
-        slim :inventory, :locals => {:search_term => search_term, :inventory => db_inventory, :category_name => Category.first(:id => category).name}
+        slim :inventory, :locals => {:search_term => search_term, :inventory => db_inventory, :category_name => Categories.first(:id => category).name}
       else
         redirect '/inventory'
       end
@@ -375,7 +375,6 @@ class App < Sinatra::Base
       loan_id = params['loan_id'].to_i
       quantity = params['quantity'].to_i
       user = Users.first(:id => user_id)
-      p origin
       if user != nil
         if origin == 2
           security_key = params['security_key']
