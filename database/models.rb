@@ -4,17 +4,6 @@ class Categories < DatabaseHandler::Table
   attribute "name", "String"
 end
 
-class Users < DatabaseHandler::Table
-  table_name "users"
-  attribute "id", "Serial"
-  attribute "name", "String"
-  attribute "email", "String"
-  attribute "password", "String"
-  attribute "security_key", "String"
-  attribute "birth_date", "String"
-  attribute "permission_level", "String"
-end
-
 class Loans < DatabaseHandler::Table
   table_name "loans"
   attribute "id", "Serial"
@@ -24,6 +13,21 @@ class Loans < DatabaseHandler::Table
   attribute "item", "Integer"
   attribute "quantity", "Integer"
   attribute "item_id", "Integer"
+
+  belongs_to :loan_items, self, :loan_id
+end
+
+class Users < DatabaseHandler::Table
+  table_name "users"
+  attribute "id", "Serial"
+  attribute "name", "String"
+  attribute "email", "String"
+  attribute "password", "String"
+  attribute "security_key", "String"
+  attribute "birth_date", "String"
+  attribute "permission_level", "String"
+
+  belongs_to :loans, Loans, :user_id
 end
 
 class Stock_Inventory < DatabaseHandler::Table
@@ -54,8 +58,6 @@ class Inventory < DatabaseHandler::Table
       if params[:sort_after] != nil && (params[:sort_after] == "name_asc" || params[:sort_after] == "name_desc" || params[:sort_after] == "quantity_asc" || params[:sort_after] == "quantity_desc")
         order_type = params[:sort_after][0..params[:sort_after].index('_') - 1]
         order_dir = params[:sort_after][params[:sort_after].index('_') + 1..-1]
-        p order_type
-        p order_dir
         inventory_hash[:order] = [order_type.to_sym, order_dir.to_sym]
       end
     end

@@ -333,7 +333,7 @@ class App < Sinatra::Base
           :item_id => item['item_id'],
           :quantity => item['quantity']
       }
-      if !Loans.create(new_loan).save
+      if !Loans.create(new_loan)
         return 'Item did not save!'
       end
 
@@ -388,7 +388,7 @@ class App < Sinatra::Base
                 end
               else
                 old_quantity = item.quantity
-                if item.destroy
+                if item.delete
                   add_inventory_item(item_id: item_id, quantity: old_quantity)
                   response[:status] = 'true'
                 end
@@ -405,7 +405,7 @@ class App < Sinatra::Base
               end
             else
               old_quantity = item.quantity
-              if item.destroy
+              if item.delete
                 add_inventory_item(item_id: item_id, quantity: old_quantity)
                 response[:status] = 'true'
               end
@@ -427,7 +427,7 @@ class App < Sinatra::Base
     if user != nil
       if user.security_key == security_key
         Loans.all(:user_id => user_id).each do |loan|
-          if !loan.destroy
+          if !loan.delete
             return "false"
           end
         end
@@ -515,9 +515,7 @@ class App < Sinatra::Base
               :quantity => params["item-quantity"]
           })
 
-          p params[:"item-picture"]
-
-          if item.save && stock_item.save
+          if item && stock_item
             unless params[:"item-picture"].nil?
               if File.exists?("./public/product_images/product_#{params["item-id"]}.jpg")
                 File.delete("./public/product_images/product_#{params["item-id"]}.jpg")
@@ -578,7 +576,7 @@ class App < Sinatra::Base
           item = Inventory.first(:id => params["item_id"])
           stock_item = Stock_Inventory.first(:id => params["item_id"])
 
-          if item.destroy && stock_item.destroy
+          if item.delete && stock_item.delete
             if File.exists?("./public/product_images/product_#{params["item_id"]}.jpg")
               File.delete("./public/product_images/product_#{params["item_id"]}.jpg")
             end

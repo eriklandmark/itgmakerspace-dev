@@ -1,9 +1,3 @@
-class String
-  def like
-    p self
-  end
-end
-
 module DatabaseHandler
 
   def self.init(db_path:)
@@ -38,6 +32,11 @@ module DatabaseHandler
 
     def self.execute(str)
       $database.execute(str)
+    end
+
+    def self.belongs_to(method, klass, key)
+      @relations ||= []
+      @relations << {:method => method, :class => klass, :key => key}
     end
 
     def self.all(*condition)
@@ -95,7 +94,7 @@ module DatabaseHandler
           @attributes.each_with_index do |attribute, index|
             element_values[attribute[:name]] = element[index]
           end
-          elements << DatabaseHandler::DatabaseObject.new(@table_name, element_values)
+          elements << DatabaseHandler::DatabaseObject.new(@table_name, @relations, element_values)
         end
         elements
       rescue => e
@@ -140,7 +139,7 @@ module DatabaseHandler
         @attributes.each_with_index do |attribute, index|
           values[attribute[:name]] = element[index]
         end
-        DatabaseHandler::DatabaseObject.new(@table_name, values)
+        DatabaseHandler::DatabaseObject.new(@table_name, @relations, values)
       end
     end
 
@@ -237,8 +236,9 @@ module DatabaseHandler
   end
 
   class DatabaseObject
-    def initialize(table_name, values)
+    def initialize(table_name, relations, values)
       @table_name = table_name
+      @relations = relations
       values.each do |key, value|
         self.instance_variable_set("@#{key}".to_sym, value)
         self.class.send(:attr_accessor, key)
@@ -272,6 +272,18 @@ module DatabaseHandler
         rescue => e
           p e
           false
+        end
+      end
+
+      def method_missing(m, *args, &block)
+        if !@relations.nil?
+          @relations.each do |method|
+            if m == method[:method]
+              return method[:class].all(method[:key] => @id)
+            end
+          end
+        else
+          method_missing(m, args, block)
         end
       end
     end
