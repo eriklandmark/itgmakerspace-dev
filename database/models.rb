@@ -42,107 +42,24 @@ class Inventory < DatabaseHandler::Table
   attribute "category", "Integer"
 
   def self.get_inventory(params:)
-    category_limit = Categories.max(:id)
-    order_of = nil
-    order_dir = ''
-    db_inventory = nil
-    category = '0'
+    inventory_hash = {}
 
-    if params.length == 0
-      db_inventory = Inventory.all(:order => [:name, :asc])
-    else
+    if !params.nil? && params.length > 0
       if params[:search_term] != nil && params[:search_term] != ''
-        search_term = params[:search_term]
-        order_of = nil
-        order_dir = ''
-        if params[:sort_after] != nil
-          if params[:sort_after] == 'name_asc'
-            order_of = 'name'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'name_desc'
-            order_of = 'name'
-            order_dir = 'desc'
-          elsif params[:sort_after] == 'quantity_asc'
-            order_of = 'quantity'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'quantity_desc'
-            order_of = 'quantity'
-            order_dir = 'desc'
-          else
-            order_of = 'quantity'
-            order_dir = 'desc'
-          end
-        end
-        if order_of != nil
-          if order_dir == 'asc'
-            db_inventory = Inventory.all(:name => {:like => search_term}, :order => [order_of.to_sym, :asc])
-          elsif order_dir == 'desc'
-            db_inventory = Inventory.all(:name => {:like => search_term}, :order => [order_of.to_sym, :desc])
-          else
-            db_inventory = Inventory.all(:name => {:like => search_term}, :order => [order_of.to_sym, :asc])
-          end
-        else
-          db_inventory = Inventory.all(:name => {:like => search_term})
-        end
-      else
-        if params[:sort_after] != nil
-          if params[:sort_after] == 'name_asc'
-            order_of = 'name'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'name_desc'
-            order_of = 'name'
-            order_dir = 'desc'
-          elsif params[:sort_after] == 'quantity_asc'
-            order_of = 'quantity'
-            order_dir = 'asc'
-          elsif params[:sort_after] == 'quantity_desc'
-            order_of = 'quantity'
-            order_dir = 'desc'
-          end
-        end
-
-        if params[:category] != nil && params[:category].is_i?
-          if params[:category].to_i < 1 || params[:category].to_i > category_limit
-            if order_of != nil
-              if order_dir == 'asc'
-                db_inventory = Inventory.all(:order => [order_of.to_sym, :asc])
-              elsif order_dir == 'desc'
-                db_inventory = Inventory.all(:order => [order_of.to_sym, :desc])
-              else
-                db_inventory = Inventory.all(:order => [order_of.to_sym, :asc])
-              end
-            else
-              db_inventory = Inventory.all(:order => [:name, :asc])
-            end
-          else
-            if order_of != nil
-              if order_dir == 'asc'
-                db_inventory = Inventory.all(:category => params[:category], :order => [order_of.to_sym, :asc])
-              elsif order_dir == 'desc'
-                db_inventory = Inventory.all(:category => params[:category], :order => [order_of.to_sym, :desc])
-              else
-                db_inventory = Inventory.all(:category => params[:category], :order => [order_of.to_sym, :asc])
-              end
-            else
-              db_inventory = Inventory.all(:category => params[:category])
-            end
-          end
-        else
-          if order_of != nil
-            if order_dir == 'asc'
-              db_inventory = Inventory.all(:order => [order_of.to_sym, :asc])
-            elsif order_dir == 'desc'
-              db_inventory = Inventory.all(:order => [order_of.to_sym, :desc])
-            else
-              db_inventory = Inventory.all(:order => [order_of.to_sym, :asc])
-            end
-          else
-            db_inventory = Inventory.all(:order => [:name, :asc])
-          end
-        end
+        inventory_hash[:name] = params[:search_term]
+      end
+      if params[:category] != nil && params[:category].to_i <= Categories.max(:id)
+        inventory_hash[:category] = params[:category]
+      end
+      if params[:sort_after] != nil && (params[:sort_after] == "name_asc" || params[:sort_after] == "name_desc" || params[:sort_after] == "quantity_asc" || params[:sort_after] == "quantity_desc")
+        order_type = params[:sort_after][0..params[:sort_after].index('_') - 1]
+        order_dir = params[:sort_after][params[:sort_after].index('_') + 1..-1]
+        p order_type
+        p order_dir
+        inventory_hash[:order] = [order_type.to_sym, order_dir.to_sym]
       end
     end
 
-    db_inventory
+    Inventory.all(inventory_hash)
   end
 end
