@@ -7,11 +7,11 @@ require 'rack/ssl-enforcer'
 require 'rack/rewrite'
 require "net/https"
 require "uri"
+require 'pp'
 
 require_relative 'DatabaseHandler'
 require_relative 'app'
 require_relative 'lib'
-require_relative 'database/models'
 
 register Sinatra::DefaultCharset
 
@@ -19,6 +19,7 @@ configure :development do
   puts 'In Development Environment'
 
   DatabaseHandler.init(db_path: "database/database.sqlite")
+  require_relative 'database/models'
   update_inventory_items
 
   run App
@@ -38,9 +39,10 @@ configure :production do
   puts 'In Production Environment'
 
   DatabaseHandler.init(db_path: "database/database.sqlite")
+  require_relative 'database/models'
   update_inventory_items
 
-  fork() do
+  fork do
     Rack::Server.start({
         :Port => 80,
         :Host => '0.0.0.0',

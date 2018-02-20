@@ -226,8 +226,8 @@ class App < Sinatra::Base
         end
 
         inventory_item_names = []
-        Inventory.all(:order => [:name, :asc]).each do |item|
-          inventory_item_names << item.name
+        Inventory.all(:order => [:name, :asc]).each do |i|
+          inventory_item_names << i.name
         end
 
         slim :item_page, :locals => {
@@ -333,11 +333,11 @@ class App < Sinatra::Base
           :item_id => item['item_id'],
           :quantity => item['quantity']
       }
-      if !Loans.create(new_loan)
+      unless Loans.create(new_loan)
         return 'Item did not save!'
       end
 
-      if !delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
+      unless delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
         return 'Something went wrong with the database!'
       end
     end
@@ -427,14 +427,14 @@ class App < Sinatra::Base
     if user != nil
       if user.security_key == security_key
         Loans.all(:user_id => user_id).each do |loan|
-          if !loan.delete
-            return "false"
+          unless loan.delete
+            "false"
           end
         end
-        return "true"
+        "true"
       end
     end
-    return "false"
+    "false"
   end
 
   get '/error' do
@@ -478,8 +478,7 @@ class App < Sinatra::Base
         item = Inventory.first(:id => params["item_id"])
 
         if item.nil?
-          p "hej"
-          status 404
+          return status 404
         else
           return slim(:"add-inventory-item", :locals => {
               :item_id => params["item_id"],
@@ -507,15 +506,11 @@ class App < Sinatra::Base
               :name => params["item-name"],
               :quantity => params["item-quantity"].to_i,
               :description => params["item-description"],
-              :category => params["item-category"]
+              :category => params["item-category"],
+              :stock_quantity => params["item-quantity"].to_i
           })
 
-          stock_item = Stock_Inventory.create({
-              :id => id,
-              :quantity => params["item-quantity"]
-          })
-
-          if item && stock_item
+          if item
             unless params[:"item-picture"].nil?
               if File.exists?("./public/product_images/product_#{params["item-id"]}.jpg")
                 File.delete("./public/product_images/product_#{params["item-id"]}.jpg")
@@ -532,21 +527,17 @@ class App < Sinatra::Base
           end
         else
           item = Inventory.first(:id => params["item-id"])
-          stock_item = Stock_Inventory.first(:id => params["item-id"])
 
-          unless item.nil? && stock_item.nil?
+          unless item.nil?
             item_update = {
                 :name => params["item-name"],
                 :quantity => params["item-quantity"].to_i,
                 :description => params["item-description"],
-                :category => params["item-category"]
+                :category => params["item-category"],
+                :stock_quantity => params["item-quantity"].to_i
             }
 
-            stock_item_update = {
-                :quantity => params["item-quantity"].to_i,
-            }
-
-            if item.update(item_update) && stock_item.update(stock_item_update)
+            if item.update(item_update)
               unless params[:"item-picture"].nil?
                 if File.exists?("./public/product_images/product_#{params["item-id"]}.jpg")
                   File.delete("./public/product_images/product_#{params["item-id"]}.jpg")
@@ -574,9 +565,8 @@ class App < Sinatra::Base
       if session[:permission_level] >= 2
         unless params["item_id"].nil?
           item = Inventory.first(:id => params["item_id"])
-          stock_item = Stock_Inventory.first(:id => params["item_id"])
 
-          if item.delete && stock_item.delete
+          if item.delete
             if File.exists?("./public/product_images/product_#{params["item_id"]}.jpg")
               File.delete("./public/product_images/product_#{params["item_id"]}.jpg")
             end
@@ -592,5 +582,9 @@ class App < Sinatra::Base
     status 403
     error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
     slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+  end
+
+  get '/society' do
+    erb :society
   end
 end

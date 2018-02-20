@@ -1,12 +1,23 @@
 class Categories < DatabaseHandler::Table
   table_name "categories"
-  attribute "id", "Serial"
-  attribute "name", "String"
+  attribute "id", "Integer", :not_null => true, :primary_key => true
+  attribute "name", "VARCHAR(50)"
+
+  init_table
+end
+
+class Test < DatabaseHandler::Table
+  table_name "test"
+  attribute "id", "Integer", :not_null => true, :primary_key => true
+  attribute "name", "VARCHAR(50)"
+  attribute "test", "Integer", :not_null => false, :default => nil
+
+  init_table
 end
 
 class Loans < DatabaseHandler::Table
   table_name "loans"
-  attribute "id", "Serial"
+  attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
   attribute "user_id", "String"
   attribute "loan_id", "String"
   attribute "date_loaned", "String"
@@ -14,12 +25,12 @@ class Loans < DatabaseHandler::Table
   attribute "quantity", "Integer"
   attribute "item_id", "Integer"
 
-  belongs_to :loan_items, self, :loan_id
+  init_table
 end
 
 class Users < DatabaseHandler::Table
   table_name "users"
-  attribute "id", "Serial"
+  attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
   attribute "name", "String"
   attribute "email", "String"
   attribute "password", "String"
@@ -28,22 +39,21 @@ class Users < DatabaseHandler::Table
   attribute "permission_level", "String"
 
   belongs_to :loans, Loans, :user_id
-end
 
-class Stock_Inventory < DatabaseHandler::Table
-  table_name "stock_inventory_items"
-  attribute "id", "Serial"
-  attribute "quantity", "Integer"
+  init_table
 end
 
 class Inventory < DatabaseHandler::Table
   table_name "inventory_items"
-  attribute "id", "Serial"
+  attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
   attribute "name", "String"
   attribute "barcode", "String"
   attribute "description", "String"
   attribute "quantity", "Integer"
   attribute "category", "Integer"
+  attribute "stock_quantity", "Integer"
+
+  init_table
 
   def self.get_inventory(params:)
     inventory_hash = {}

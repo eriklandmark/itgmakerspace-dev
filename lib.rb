@@ -63,7 +63,7 @@ def update_inventory_items
   all_loans = Loans.all
   if all_loans.length >= 1
     all_loans.each do |loan|
-      if !item_ids.include?(loan.item_id)
+      unless item_ids.include?(loan.item_id)
         item_ids << loan.item_id
       end
     end
@@ -79,12 +79,11 @@ def update_inventory_items
 
     loans.each do |loan|
       item = Inventory.first(:id => loan[:item_id])
-      stock_item = Stock_Inventory.first(:id => loan[:item_id])
-      item.update(:quantity => (stock_item.quantity - loan[:quantity]))
+      item.update(:quantity => (item.stock_quantity - loan[:quantity]))
     end
   else
     Inventory.all.each do |item|
-      item.update(:quantity => (Stock_Inventory.first(:id => item.id).quantity))
+      item.update(:quantity => item.stock_quantity)
     end
   end
 end
