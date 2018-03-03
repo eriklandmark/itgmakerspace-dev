@@ -68,7 +68,7 @@ class Inventory < DatabaseHandler::Table
 
     if !params.nil? && params.length > 0
       if params[:search_term] != nil && params[:search_term] != ''
-        inventory_hash[:name] = params[:search_term]
+        inventory_hash[:name] = {:like => params[:search_term]}
       end
       if params[:category] != nil && params[:category].to_i <= Categories.max(:id)
         inventory_hash[:category] = params[:category]
