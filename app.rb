@@ -182,11 +182,14 @@ class App < Sinatra::Base
 
   get '/inventory' do
     inventory = []
-    category = '0'
+    category = params[:category]
     search_term = params[:search_term]
 
     if search_term.nil?
       search_term = ""
+    end
+    if category.nil?
+      category = "0"
     end
 
     db_inventory = Inventory.get_inventory(params: params)

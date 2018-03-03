@@ -70,7 +70,7 @@ class Inventory < DatabaseHandler::Table
       if params[:search_term] != nil && params[:search_term] != ''
         inventory_hash[:name] = {:like => params[:search_term]}
       end
-      if params[:category] != nil && params[:category].to_i <= Categories.max(:id)
+      if params[:category] != nil && params[:category].to_i <= Categories.max(:id) && params[:category].to_i > 0
         inventory_hash[:category] = params[:category]
       end
       if params[:sort_after] != nil && (params[:sort_after] == "name_asc" || params[:sort_after] == "name_desc" || params[:sort_after] == "quantity_asc" || params[:sort_after] == "quantity_desc")
