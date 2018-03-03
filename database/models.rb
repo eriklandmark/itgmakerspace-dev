@@ -6,24 +6,32 @@ class Categories < DatabaseHandler::Table
   init_table
 end
 
-class Test < DatabaseHandler::Table
-  table_name "test"
-  attribute "id", "Integer", :not_null => true, :primary_key => true
-  attribute "name", "VARCHAR(50)"
-  attribute "test", "Integer", :not_null => false, :default => nil
+class Loan_Items < DatabaseHandler::Table
+  ACTIVE = 1
+  INACTIVE = 0
+
+  table_name "loan_items"
+
+  attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
+  attribute "loan_id", "Integer"
+  attribute "status", "Integer"
+  attribute "quantity", "Integer"
+  attribute "item_id", "Integer"
 
   init_table
 end
 
 class Loans < DatabaseHandler::Table
+  ACTIVE = 1
+  INACTIVE = 0
+
   table_name "loans"
   attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
-  attribute "user_id", "String"
-  attribute "loan_id", "String"
-  attribute "date_loaned", "String"
-  attribute "item", "Integer"
-  attribute "quantity", "Integer"
-  attribute "item_id", "Integer"
+  attribute "user_id", "Integer"
+  attribute "status", "Integer"
+  attribute "date_loaned", "VARCHAR(30)"
+
+  belongs_to :items, Loan_Items, :id, :loan_id
 
   init_table
 end
@@ -31,14 +39,14 @@ end
 class Users < DatabaseHandler::Table
   table_name "users"
   attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
-  attribute "name", "String"
-  attribute "email", "String"
-  attribute "password", "String"
-  attribute "security_key", "String"
-  attribute "birth_date", "String"
-  attribute "permission_level", "String"
+  attribute "name", "VARCHAR(100)"
+  attribute "email", "VARCHAR(100)"
+  attribute "password", "VARCHAR(65)"
+  attribute "security_key", "VARCHAR(100)"
+  attribute "birth_date", "VARCHAR(30)"
+  attribute "permission_level", "Integer"
 
-  belongs_to :loans, Loans, :user_id
+  belongs_to :loans, Loans, :id, :user_id
 
   init_table
 end
@@ -46,9 +54,9 @@ end
 class Inventory < DatabaseHandler::Table
   table_name "inventory_items"
   attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
-  attribute "name", "String"
-  attribute "barcode", "String"
-  attribute "description", "String"
+  attribute "name", "VARCHAR(50)"
+  attribute "barcode", "VARCHAR(10)"
+  attribute "description", "VARCHAR(16655)"
   attribute "quantity", "Integer"
   attribute "category", "Integer"
   attribute "stock_quantity", "Integer"

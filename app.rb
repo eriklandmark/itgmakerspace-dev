@@ -127,17 +127,19 @@ class App < Sinatra::Base
     begin
       loans_items = []
       user_id = Users.first(:email => session[:user_email]).id
-      user_loans = Loans.all(:user_id => user_id, :order => [:loan_id, :asc])
-      total_of_user_loans = Loans.max(:loan_id, :user_id => user_id)
+      user_loans = Loans.all(:user_id => user_id, :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}
+      total_of_user_loans = Loans.max(:id, :user_id => user_id)
 
       if total_of_user_loans != nil
         total_of_user_loans.times do |id|
           items = []
           date = ''
           user_loans.each do |loan|
-            if loan.loan_id == (id + 1)
-              date = loan.date_loaned
-              items << {:item => loan.item, :quantity => loan.quantity, :item_id => loan.item_id, :loan_id => loan.loan_id}
+            loan.items.each do |item|
+              if loan.id == (id + 1) && item.status == Loan_Items::ACTIVE
+                date = loan.date_loaned
+                items << {:item => Inventory.first(:id => item.item_id).name, :quantity => item.quantity, :item_id => item.item_id, :loan_id => loan.id}
+              end
             end
           end
           if items.length > 0
@@ -146,7 +148,8 @@ class App < Sinatra::Base
         end
       end
       slim :my_loans, :locals => {:loans_items => loans_items}
-    rescue
+    rescue => e
+      p e.message
       redirect '/'
     end
   end
@@ -303,8 +306,7 @@ class App < Sinatra::Base
     security_key = params['security_key']
     user_id = params['user_id']
     items = params['items']
-    loan_id = Loans.max(:loan_id)
-
+    loan_id = Loans.max(:id)
     if loan_id == nil
       loan_id = 1
     else
@@ -312,7 +314,6 @@ class App < Sinatra::Base
     end
 
     user = Users.first(:id => user_id)
-
     if user == nil
       return "User doesn't exists!"
     end
@@ -323,22 +324,25 @@ class App < Sinatra::Base
 
     items = JSON.parse(items)
     date = Time.new.strftime('%Y-%m-%d_%H:%M:%S')
+    if Loans.create({
+                        :id => loan_id,
+                        :date_loaned => date,
+                        :status => Loans::ACTIVE,
+                        :user_id => user_id
+                    })
+      items.each do |item|
+        unless Loan_Items.create({
+            :loan_id => loan_id,
+            :item_id => item['item_id'],
+            :quantity => item['quantity'],
+            :status => Loans::ACTIVE
+        })
+          return 'Item did not save!'
+        end
 
-    items.each do |item|
-      new_loan = {
-          :user_id => user_id,
-          :loan_id => loan_id,
-          :date_loaned => date,
-          :item => item['item'],
-          :item_id => item['item_id'],
-          :quantity => item['quantity']
-      }
-      unless Loans.create(new_loan)
-        return 'Item did not save!'
-      end
-
-      unless delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
-        return 'Something went wrong with the database!'
+        unless delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
+          return 'Something went wrong with the database!'
+        end
       end
     end
 
@@ -352,8 +356,12 @@ class App < Sinatra::Base
     user = Users.first(:id => user_id)
     if user != nil && user.security_key == security_key
       items = []
-      Loans.all(:user_id => user_id, :order => [:loan_id]).each do |loan|
-        items << {:quantity => loan.quantity, :item_id => loan.item_id, :loan_id => loan.loan_id, :date_loaned => loan.date_loaned}
+      Loans.all(:user_id => user_id, :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}.each do |loan|
+        loan.items.each do |item|
+          if item.status == Loans::ACTIVE
+            items << {:quantity => item.quantity, :item_id => item.item_id, :loan_id => loan.id, :date_loaned => loan.date_loaned, :item_name => Inventory.first(:id => item.item_id).name}
+          end
+        end
       end
       response[:status] = 'true'
       response[:items] = items
@@ -376,39 +384,32 @@ class App < Sinatra::Base
       quantity = params['quantity'].to_i
       user = Users.first(:id => user_id)
       if user != nil
-        if origin == 2
-          security_key = params['security_key']
-          if user.security_key == security_key
-            item = Loans.first(:item_id => item_id, :loan_id => loan_id)
-            if item != nil
-              if item.quantity > quantity
-                if item.update(:quantity => (item.quantity - quantity))
-                  add_inventory_item(item_id: item_id, quantity: quantity)
-                  response[:status] = 'true'
-                end
-              else
-                old_quantity = item.quantity
-                if item.delete
-                  add_inventory_item(item_id: item_id, quantity: old_quantity)
-                  response[:status] = 'true'
-                end
-              end
+        proceed = false
+        if origin == 2 && params['security_key'] != nil && user.security_key == params['security_key']
+          proceed = true
+        elsif origin == 1
+          proceed = true
+        end
+
+        item = Loan_Items.first(:item_id => item_id, :loan_id => loan_id, :status => Loan_Items::ACTIVE)
+        if item != nil && proceed
+          if item.quantity > quantity
+            if item.update(:quantity => (item.quantity - quantity))
+              add_inventory_item(item_id: item_id, quantity: quantity)
+              response[:status] = 'true'
+            end
+          else
+            old_quantity = item.quantity
+            if item.update({:status => Loan_Items::INACTIVE})
+              add_inventory_item(item_id: item_id, quantity: old_quantity)
+              response[:status] = 'true'
             end
           end
-        elsif origin == 1
-          item = Loans.first(:item_id => item_id, :loan_id => loan_id)
-          if item != nil
-            if item.quantity > quantity
-              if item.update(:quantity => (item.quantity - quantity))
-                add_inventory_item(item_id: item_id, quantity: quantity)
-                response[:status] = 'true'
-              end
+          if Loan_Items.count(:loan_id => loan_id, :status => Loan_Items::ACTIVE) <= 0
+            if Loans.first(:id => loan_id).update(:status => Loans::INACTIVE)
+              response[:status] = 'true'
             else
-              old_quantity = item.quantity
-              if item.delete
-                add_inventory_item(item_id: item_id, quantity: old_quantity)
-                response[:status] = 'true'
-              end
+              response[:status] = 'false'
             end
           end
         end
@@ -426,9 +427,14 @@ class App < Sinatra::Base
     user = Users.first(:id => user_id)
     if user != nil
       if user.security_key == security_key
-        Loans.all(:user_id => user_id).each do |loan|
-          unless loan.delete
+        Loans.all(:user_id => user_id){{:include => "items"}}.each do |loan|
+          unless loan.update(:status => Loans::INACTIVE)
             "false"
+          end
+          loan.items.each do |item|
+            unless item.update(:status => Loans::INACTIVE)
+              "false"
+            end
           end
         end
         "true"
@@ -460,6 +466,7 @@ class App < Sinatra::Base
         return slim(:"add-inventory-item", :locals => {
             :item_id => "-1",
             :item_name => "",
+            :item_barcode => "",
             :item_category => 0,
             :item_quantity => 1,
             :item_description => ""
@@ -483,6 +490,7 @@ class App < Sinatra::Base
           return slim(:"add-inventory-item", :locals => {
               :item_id => params["item_id"],
               :item_name => item.name,
+              :item_barcode => item.barcode,
               :item_category => item.category,
               :item_quantity => item.quantity,
               :item_description => item.description
@@ -504,6 +512,7 @@ class App < Sinatra::Base
           item = Inventory.create({
               :id => id,
               :name => params["item-name"],
+              :barcode => params["item-barcode"],
               :quantity => params["item-quantity"].to_i,
               :description => params["item-description"],
               :category => params["item-category"],
@@ -531,6 +540,7 @@ class App < Sinatra::Base
           unless item.nil?
             item_update = {
                 :name => params["item-name"],
+                :barcode => params["item-barcode"],
                 :quantity => params["item-quantity"].to_i,
                 :description => params["item-description"],
                 :category => params["item-category"],
@@ -584,7 +594,32 @@ class App < Sinatra::Base
     slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
   end
 
-  get '/society' do
+  get '/dev/society' do
     erb :society
+  end
+
+  post '/get-item-from-barcode' do
+    response = {:status => 'false'}
+    if params["origin"] != nil && params["origin"].to_i == 2
+      barcode = params["barcode"]
+      p barcode
+      item = Inventory.first(:barcode => barcode)
+
+      if item != nil
+        response[:status] = 'true'
+        response[:item] = {
+            :id => item.id,
+            :name => item.name,
+            :quantity => item.quantity,
+            :description => item.description,
+            :barcode => item.barcode
+        }
+      else
+        response[:status_msg] = "Coudn't find the item with barcode: #{barcode}"
+      end
+    else
+      response[:status_msg] = "403: Request denied!"
+    end
+    response.to_json
   end
 end

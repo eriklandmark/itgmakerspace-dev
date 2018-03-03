@@ -6,6 +6,7 @@ module DatabaseHandler
   end
 
   class Table
+
     def self.attribute(*args)
       @attributes ||= []
 
@@ -55,8 +56,9 @@ module DatabaseHandler
       $database.execute(str)
     end
 
-    private def create_table(name,attributes)
+    def self.create_table(name,attributes)
       begin
+        query = ""
         attributes.each_with_index do |attribute, index|
           query += "'#{attribute[:name]}' #{attribute[:type]}"
           if attribute[:not_null]
@@ -82,14 +84,14 @@ module DatabaseHandler
         $database.execute("CREATE TABLE IF NOT EXISTS '#{name}' (#{query})")
         true
       rescue => e
-        puts e
+        puts e.backtrace
         false
       end
     end
 
     def self.init_table
       begin
-        table_exists = $database.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='#{@table_name}';")
+        table_exists = $database.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='#{@table_name}'")
         if table_exists.empty?
           create_table(@table_name, @attributes)
         else
@@ -103,7 +105,6 @@ module DatabaseHandler
           @attributes.each do |item_b|
             column_b << item_b[:name].downcase
           end
-
 
           if !(column_b - column_a).empty? || !(column_a - column_b).empty?
             alter_table = true
@@ -127,7 +128,8 @@ module DatabaseHandler
 
                 if p_attribute[:not_null] != attribute[:not_null] ||
                     p_attribute[:default] != attribute[:default] ||
-                    p_attribute[:primary_key] != attribute[:primary_key]
+                    p_attribute[:primary_key] != attribute[:primary_key] ||
+                    p_attribute[:type] != attribute[:type]
                   alter_table = true
                 end
               end
@@ -137,7 +139,6 @@ module DatabaseHandler
           if alter_table
             $database.execute("DROP TABLE IF EXISTS tmp_#{@table_name}")
             $database.execute("ALTER TABLE #{@table_name} RENAME TO tmp_#{@table_name}")
-            query = ""
             columns = ""
             same_columns = column_a & column_b
             same_columns.each_with_index do |column, index|
@@ -146,10 +147,7 @@ module DatabaseHandler
                 columns += ", "
               end
             end
-
             create_table(@table_name, @attributes)
-
-            $database.execute("CREATE TABLE '#{@table_name}' (#{query})")
             $database.execute("INSERT INTO #{@table_name} (#{columns}) SELECT #{columns} FROM tmp_#{@table_name}")
             $database.execute("DROP TABLE tmp_#{@table_name}")
           end
@@ -162,42 +160,114 @@ module DatabaseHandler
       end
     end
 
-    def self.belongs_to(method, klass, key)
+    def self.belongs_to(method, klass, key_1, key_2)
       @relations ||= []
-      @relations << {:method => method, :class => klass, :key => key}
+      @relations << {:method => method, :class => klass, :key_1 => key_1, :key_2 => key_2}
     end
 
-    def self.all(*condition)
+    def self.all(*condition, &block)
       begin
-        con_query = generate_condition_query(condition)
-        elements = []
-        $database.execute("SELECT * FROM #{@table_name} #{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition)).each do |element|
-          element_values = {}
-          @attributes.each_with_index do |attribute, index|
-            element_values[attribute[:name]] = element[index]
+        if block_given? && block != nil
+          relation = nil
+          @relations.each do |rel|
+            if rel[:method].to_s == yield[:include]
+              relation = rel
+            end
           end
-          elements << DatabaseHandler::DatabaseObject.new(@table_name, @relations, element_values)
+          if relation != nil
+            con_query = generate_condition_query(condition, @table_name)
+            elements = []
+            $database.execute("SELECT * FROM #{@table_name} INNER JOIN #{relation[:class].get_table_name} ON #{@table_name}.#{relation[:key_1]} = #{relation[:class].get_table_name}.#{relation[:key_2]}#{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition)).each do |e|
+              table_1_values = {}
+              table_2_values = {}
+              table_1 = e[0..@attributes.length - 1]
+              table_2 = e[@attributes.length..-1]
+              @attributes.each_with_index do |attribute, index|
+                table_1_values[attribute[:name]] = table_1[index]
+              end
+              relation[:class].get_attributes.each_with_index do |attribute, index|
+                table_2_values[attribute[:name]] = table_2[index]
+              end
+              table_1_values[relation[:method].to_sym] ||= []
+              table_1_values[relation[:method].to_sym] << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
+              contains_element = false
+              elements.each_with_index do |element, index|
+                if element.instance_variable_get("@" + relation[:key_1].to_s) == table_1_values[relation[:key_1].to_s]
+                  contains_element = true
+                  rels = elements[index].instance_variable_get("@" + relation[:method].to_s)
+                  rels << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
+                  elements[index].instance_variable_set(("@" + relation[:method].to_s).to_sym, rels)
+                end
+              end
+              unless contains_element
+                elements << DatabaseHandler::DatabaseObject.new(@table_name, table_1_values)
+              end
+            end
+            elements
+          else
+            all(*condition)
+          end
+        else
+          con_query = generate_condition_query(condition, nil)
+          elements = []
+          $database.execute("SELECT * FROM #{@table_name} #{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition)).each do |element|
+            element_values = {}
+            @attributes.each_with_index do |attribute, index|
+              element_values[attribute[:name]] = element[index]
+            end
+            elements << DatabaseHandler::DatabaseObject.new(@table_name, element_values)
+          end
+          elements
         end
-        elements
       rescue => e
-        p e
+        puts e.message
+        puts e.backtrace
         nil
       end
     end
 
-    def self.first(*condition)
+    def self.first(*condition, &block)
       begin
-        con_query = generate_condition_query(condition)
-        element = $database.execute("SELECT * FROM #{@table_name} #{con_query[0]}#{con_query[1]} LIMIT 1", *get_values_from_condition(condition)).first
-
-        if element.nil? || element.empty?
-          nil
-        else
-          values = {}
-          @attributes.each_with_index do |attribute, index|
-            values[attribute[:name]] = element[index]
+        if block_given? && block != nil
+          relation = nil
+          @relations.each do |rel|
+            if rel[:method].to_s == yield[:include]
+              relation = rel
+            end
           end
-          DatabaseHandler::DatabaseObject.new(@table_name, @relations, values)
+          if relation != nil
+            con_query = generate_condition_query(condition, @table_name)
+            db_result = $database.execute("SELECT * FROM #{@table_name} INNER JOIN #{relation[:class].get_table_name} ON #{@table_name}.#{relation[:key_1]} = #{relation[:class].get_table_name}.#{relation[:key_2]}#{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition))
+            table_1_values = {}
+            table_1 = db_result.first[0..@attributes.length - 1]
+            @attributes.each_with_index do |attribute, index|
+              table_1_values[attribute[:name]] = table_1[index]
+            end
+            db_result.each do |e|
+              table_2_values = {}
+              table_2 = e[@attributes.length..-1]
+              relation[:class].get_attributes.each_with_index do |attribute, index|
+                table_2_values[attribute[:name]] = table_2[index]
+              end
+              table_1_values[relation[:method].to_sym] ||= []
+              table_1_values[relation[:method].to_sym] << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
+            end
+            DatabaseHandler::DatabaseObject.new(@table_name, table_1_values)
+          else
+            first(*condition)
+          end
+        else
+          con_query = generate_condition_query(condition, nil)
+          element = $database.execute("SELECT * FROM #{@table_name} #{con_query[0]}#{con_query[1]} LIMIT 1", *get_values_from_condition(condition)).first
+          if element.nil? || element.empty?
+            nil
+          else
+            values = {}
+            @attributes.each_with_index do |attribute, index|
+              values[attribute[:name]] = element[index]
+            end
+            DatabaseHandler::DatabaseObject.new(@table_name, values)
+          end
         end
       rescue => e
         p e.backtrace
@@ -219,7 +289,6 @@ module DatabaseHandler
             question_marks += ", "
           end
         end
-
         $database.execute("INSERT INTO #{@table_name} (#{columns}) VALUES (#{question_marks})", *values)
         true
       rescue => e
@@ -228,10 +297,19 @@ module DatabaseHandler
       end
     end
 
+    def self.count(*condition)
+      begin
+        con_query = generate_condition_query(condition, nil)
+        $database.execute("SELECT COUNT(*) FROM #{@table_name} #{con_query[0]}", *get_values_from_condition(condition))[0][0].to_i
+      rescue => e
+        p e
+        nil
+      end
+    end
+
     def self.max(attribute, *condition)
       begin
-        con_query = generate_condition_query(condition)
-
+        con_query = generate_condition_query(condition, nil)
         $database.execute("SELECT MAX(#{attribute.to_s}) FROM #{@table_name} #{con_query[0]}", *get_values_from_condition(condition))[0][0].to_i
       rescue => e
         p e
@@ -241,8 +319,7 @@ module DatabaseHandler
 
     def self.min(attribute, *condition)
       begin
-        con_query = generate_condition_query(condition)
-
+        con_query = generate_condition_query(condition, nil)
         $database.execute("SELECT MIN(#{attribute.to_s}) FROM #{@table_name} #{con_query[0]}", *get_values_from_condition(condition))[0][0].to_i
       rescue => e
         p e.backtrace
@@ -250,10 +327,15 @@ module DatabaseHandler
       end
     end
 
-    def self.generate_condition_query(condition)
+    def self.generate_condition_query(condition, t_name)
       con = ""
       order_of = ""
       i = 0
+      if t_name == nil
+        table_name = ""
+      else
+        table_name = t_name.to_s + "."
+      end
       unless condition.nil? || condition.empty?
         condition.first.each do |key|
           if key[0] == :order
@@ -265,7 +347,7 @@ module DatabaseHandler
         end
         condition.first.each_with_index do |key, index|
           if key[0] == :order
-            order_of = " ORDER BY #{key[1][0]}"
+            order_of = " ORDER BY #{table_name + key[1][0].to_s}"
             if key[1][1] == :asc
               order_of += " ASC"
             elsif key[1][1] == :desc
@@ -276,14 +358,14 @@ module DatabaseHandler
           else
             if key[1].is_a?(Hash)
               if key[1].keys.first == :like
-                con += " #{key[0]} like ?"
+                con += " #{table_name + key[0].to_s} like ?"
               elsif key[1].keys.first == :is
-                con += " #{key[0]} is ?"
+                con += " #{table_name + key[0].to_s} is ?"
               else
-                puts "'#{key[1].keys.first.to_s}' is not a comparator."
+                puts "'#{table_name + key[1].keys.first.to_s}' is not a comparator."
               end
             else
-              con += " #{key[0]} = ?"
+              con += " #{table_name + key[0].to_s} = ?"
             end
             if index < condition.first.length - (1 + i)
               con += " and"
@@ -316,55 +398,42 @@ module DatabaseHandler
   end
 
   class DatabaseObject
-    def initialize(table_name, relations, values)
+    def initialize(table_name, values)
       @table_name = table_name
-      @relations = relations
       values.each do |key, value|
         self.instance_variable_set("@#{key}".to_sym, value)
         self.class.send(:attr_accessor, key)
       end
+    end
 
-      def update(elements)
-        sql_str = "UPDATE #{@table_name} SET "
-        values = []
-        elements.each_with_index do |key, index|
-          values << key[1]
-          sql_str += "#{key[0]} = ?"
-          if index < elements.length - 1
-            str += ", "
-          end
-        end
-        sql_str += " WHERE id = ?"
-        values << @id
-        begin
-          $database.execute(sql_str, *values)
-          true
-        rescue => e
-          p e
-          false
+    def update(elements)
+      sql_str = "UPDATE #{@table_name} SET "
+      values = []
+      elements.each_with_index do |key, index|
+        values << key[1]
+        sql_str += "#{key[0]} = ?"
+        if index < elements.length - 1
+          sql_str += ", "
         end
       end
-
-      def delete
-        begin
-          $database.execute("DELETE FROM #{@table_name} WHERE id = ?", @id)
-          true
-        rescue => e
-          p e
-          false
-        end
+      sql_str += " WHERE id = ?"
+      values << @id
+      begin
+        $database.execute(sql_str, *values)
+        true
+      rescue => e
+        p e
+        false
       end
+    end
 
-      def method_missing(m, *args, &block)
-        if !@relations.nil?
-          @relations.each do |method|
-            if m == method[:method]
-              return method[:class].all(method[:key] => @id)
-            end
-          end
-        else
-          method_missing(m, args, block)
-        end
+    def delete
+      begin
+        $database.execute("DELETE FROM #{@table_name} WHERE id = ?", @id)
+        true
+      rescue => e
+        p e
+        false
       end
     end
   end

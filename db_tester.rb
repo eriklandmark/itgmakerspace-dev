@@ -23,18 +23,12 @@ class Inventory_Item
   property :quantity, Integer
   property :category, Integer
 end
+#DataMapper.setup(:default, "sqlite:///#{Dir.pwd}/database/database.sqlite")
 
-DataMapper.setup(:default, "sqlite:///#{Dir.pwd}/database/database.sqlite")
-
-puts Benchmark.measure {
-  all = Inventory.all()
-}
-
-puts Benchmark.measure {
-  all = Inventory_Item.all()
-}
-
+#p Loans.all(:user_id => 1, :order => [:id, :asc])
+#pp Loans.execute("SELECT * FROM users INNER JOIN loans ON users.id = loans.user_id")
 
 #p Categories.min(:id, :name => {:like => "tt"})
-#p Categories.first(:name => {:like => "tt"},:order => [:name])
+p Loans.count(:name => {:like => "tt"})
+
 

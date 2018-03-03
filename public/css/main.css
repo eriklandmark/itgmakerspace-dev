@@ -869,7 +869,8 @@ nav {
       #add-inventory-item #main #upper #product_image_div {
         padding: 20px;
         display: flex;
-        flex-direction: column; }
+        flex-direction: column;
+        justify-content: center; }
         #add-inventory-item #main #upper #product_image_div section {
           display: flex;
           flex-direction: column;
