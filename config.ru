@@ -20,7 +20,7 @@ configure :development do
 
   DatabaseHandler.init(db_path: "database/database.sqlite")
   require_relative 'database/models'
-  #update_inventory_items
+  update_inventory_items
 
   run App
 end

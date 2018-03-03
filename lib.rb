@@ -58,28 +58,15 @@ def get_inventory_names
 end
 
 def update_inventory_items
-  item_ids = []
-  loans = []
-  all_loans = Loans.all
+  all_loans = Loans.all{{:include => "items"}}
   if all_loans.length >= 1
     all_loans.each do |loan|
-      unless item_ids.include?(loan.item_id)
-        item_ids << loan.item_id
+      loan.items.each do |item|
+        inv_item = Inventory.first(:id => item.item_id)
+        unless inv_item.update(:quantity => (inv_item.stock_quantity - item.quantity))
+          puts "Error in updating inventory!! Item_id = #{item.item_id}, Loan_id = #{loan.id}"
+        end
       end
-    end
-
-    item_ids.each do |id|
-      q = 0
-      c_loans = Loans.all(:item_id => id)
-      c_loans.each do |loan|
-        q = q + loan.quantity
-      end
-      loans << {:item_id => id, :quantity => q}
-    end
-
-    loans.each do |loan|
-      item = Inventory.first(:id => loan[:item_id])
-      item.update(:quantity => (item.stock_quantity - loan[:quantity]))
     end
   else
     Inventory.all.each do |item|
