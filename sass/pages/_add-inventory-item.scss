@@ -6,7 +6,7 @@
   #main {
     display: flex;
     flex-direction: column;
-    width: 60vw;
+    width: 70vw;
 
     h4 {
       margin: 10px 0 15px 0;
@@ -21,24 +21,19 @@
       margin: 0 10px;
     }
 
-    input[type=file] {
-      width: 100%;
+    input[type=text], select, input[type=number], input[type=file] {
       border: 2px solid gray;
       border-radius: 5px;
       background-color: white;
       font-family: "Open Sans", sans-serif;
       font-size: 1.2em;
       padding: 5px;
+      width: 100%;
+      box-sizing : border-box;
     }
 
-    input[type=text], select, input[type=number] {
-      border: 2px solid gray;
-      border-radius: 5px;
-      background-color: white;
-      font-family: "Open Sans", sans-serif;
-      font-size: 1.2em;
-      padding: 5px;
-      width: 100%;
+    input[type=number], #item-barcode {
+      text-align: center;
     }
 
     #actions {
@@ -56,14 +51,14 @@
         display: flex;
         flex-direction: column;
         justify-content: center;
+        width: 100%;
 
         section {
           display: flex;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          width: 25vw;
-          height: 25vw;
+          height: 100%;
 
           img {
             width: 100%;

@@ -1,7 +1,19 @@
+.itg-logo-pink {
+  color: #dd007d;
+}
+
+.itg-logo-orange {
+  color: #ffaa47;
+}
+
+.itg-logo-blue {
+  color: #00a2c7;
+}
+
 nav {
   display: flex;
-  //background-color: $nav_background_color;
-  background: linear-gradient(90deg, #1f1f1f, #000);
+  background-color: black;
+  //background: linear-gradient(90deg, #1f1f1f, #000);
   flex-direction: row;
   justify-content: center;
   height: $nav_bar_height;
@@ -16,16 +28,19 @@ nav {
     font-size: 1em;
     color: white;
     text-decoration: none;
+  }
 
-    &:hover {
-      cursor: pointer;
-    }
+  p:hover {
+    cursor: default;
+  }
+
+  a:hover {
+    cursor: pointer;
   }
 
   .logga_text {
     font-family: "Open Sans", sans-serif;
-    letter-spacing: 2px;
-    font-size: 1.2em;
+    font-size: 1.4em;
     font-weight: bold;
   }
 
@@ -59,6 +74,7 @@ nav {
     display: flex;
     flex-direction: row;
     justify-content: center;
+    align-items: center;
     padding:  0 20px 0 20px;
   }
 
@@ -95,9 +111,9 @@ nav {
 
   #user_menu {
     position: fixed;
-    top: $nav_bar_height + 10px;
+    top: $nav_bar_height;
     right: 0;
-    height: 250px;
+    min-width: 200px;
     display: flex;
     visibility: hidden;
     flex-direction: column;
@@ -122,10 +138,10 @@ nav {
     }
 
     #user_menu_items {
-      background: linear-gradient(0, #393939, #000);
+      background: linear-gradient(0deg, #393939, #000);
       padding: 20px 20px;
       height: 100%;
-      border-radius: 20px;
+      //border-radius: 20px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -133,16 +149,10 @@ nav {
 
       p, a {
         color: white;
-        margin: 0;
+        margin: 15px 0;
         padding: 0;
         font-weight: bold;
         font-size: 1em;
-      }
-
-      h3 {
-        color: white;
-        margin: 0;
-        padding: 0;
       }
     }
   }

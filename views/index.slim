@@ -2,11 +2,38 @@
   | Hem
 article#index_main.main
   #header_img
-  #timer
+  article
+    h1.title_text
+      | WE
+      span.itg-logo-blue  L
+      span.itg-logo-pink O
+      span.itg-logo-orange V
+      | E MAKERSPACE
     h1 Välkommen!
     h4 Nästa tillfälle om:
     p#time_to_next_meeting
-  #info
-    p Vårt Makerspace är en plats fyllt med en hel del utrustning, prylar och ett stort intresse inom allt om elektronik, mekatronik och design, ända upp till maskin learning.
+    .page_divider
+    #info
+      .row
+        section
+          h1
+            span.itg-logo-blue G
+            span.itg-logo-pink E
+            span.itg-logo-orange M
+            | ENSKAP
+          p Vårt Makerspace är en plats fyllt med en hel del utrustning, prylar och ett stort intresse inom allt om elektronik, mekatronik och design, ända upp till maskin learning.
+        section
+          img src="/images/itg-gothenburg.png"
+      .row
+        section
+          img src="/images/makerspace_1.jpg"
+        section
+          h1
+            span.itg-logo-blue M
+            span.itg-logo-pink A
+            span.itg-logo-orange K
+            | ERSPACE
+          p Vi har ett gemensamt Google Classroom där vi försöker lägga upp intärn information om händelser och dylikt. Om du vill gå med, kontakta oss i Makerspace.
+
 javascript:
   initializeCountdown("#{month + ' ' + day + ' ' + year + ' ' + hour}");

@@ -49,6 +49,9 @@
       margin-left: 10px;
       &:hover {
         cursor: pointer;
+        //background: linear-gradient(90deg,#009cdd, #eb0088, #f6932c);
+        //color: white;
+        border: 2px solid black;
       }
       &:focus {
         border: 2px solid black;

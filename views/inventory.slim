@@ -14,7 +14,7 @@ article#inventory_main.main
               h2 Sökning: "#{search_term}"
             - if !session[:permission_level].nil? && session[:permission_level] >= 2
               .actions
-                a href="/add-inventory-item"
+                a href="/inventory/new"
                   button Lägg till artikel
           p Här är sökresultatet för "#{search_term}" som finns i lagret. Lager statusen är inte garanterad.
         - else
@@ -23,7 +23,7 @@ article#inventory_main.main
               h2 Alla saker:
             - if !session[:permission_level].nil? && session[:permission_level] >= 2
               .actions
-                a href="/add-inventory-item"
+                a href="/inventory/new"
                   button Lägg till artikel
           p Här kan du hitta all elektronik, prylar, byggsatser m.m som finns att använda. Lager statusen är självklart inte garanterad.
       - else
@@ -32,7 +32,7 @@ article#inventory_main.main
             h2 Kategori: #{category_name}
           - if !session[:permission_level].nil? && session[:permission_level] >= 2
             .actions
-              a href="/add-inventory-item"
+              a href="/inventory/new"
                 button Lägg till artikel
         p Här finns alla saker i lagret inom kategorin #{category_name}. Lagerstatusen är inte granterad.
     p Obs: Bilder och informationstexter till alla föremålen kommer att läggas till i efterhand.

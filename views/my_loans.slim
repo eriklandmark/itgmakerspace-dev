@@ -24,8 +24,8 @@ article#my_loans_main.main
             - id += 1
             tr id="table_row_#{id}"
               td.name
-                a.table_item href="/items?item_id=#{item[:item_id]}" = item[:item]
+                a.table_item href="/inventory/#{item[:item_id]}" = item[:item]
               td.quantity id="table_item_quantity_#{id}"
                 p.table_item = item[:quantity]
               td
-                input onclick="delete_item(#{item[:loan_id]},#{item[:item_id]}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka")
+                input onclick="delete_item(#{user_id},#{item[:loan_id]},#{item[:item_id]}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka")

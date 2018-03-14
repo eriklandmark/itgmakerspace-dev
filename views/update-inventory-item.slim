@@ -1,0 +1,47 @@
+- content_for :title do
+  | Lägg till artikel
+
+#add-inventory-item.main
+  #main
+    h2 Redigera artikel: #{item_name}
+    form#update_item_form action="/inventory/#{item_id}/edit" method="post" enctype="multipart/form-data"
+      input id="hidden" type="hidden" name="_method" value="patch"
+      #actions
+        input type="submit" value="Spara"
+        input type="reset" value="Återställ"
+      section#upper
+        #product_image_div
+          section
+            img#product_image src="/product_images/product_#{item_id}.jpg" onchange="show_preview_image()" alt="Artikelbild saknas.."
+        #product_info_div
+          h4 Artikelnamn:
+          input type="text" name="item-name" value="#{item_name}" required="required"
+          table
+            tr
+              td
+                h4 Streckkod:
+              td
+                h4 Antal i lager:
+              td
+                h4 Kategori:
+            tr
+              td
+                input type="text" name="item-barcode" value="#{item_barcode}" required="required" id="item-barcode"
+              td
+                input type="number" name="item-quantity" value="#{item_quantity}" required="required" pattern="{1,}"
+              td
+                select name="item-category" required="required"
+                  option value="0" ...Välj Kategori...
+                  - get_categories.each do |category|
+                    - if category[:category_id] == item_category
+                      option value="#{category[:category_id]}" selected="selected" = category[:category_name]
+                    - else
+                      option value="#{category[:category_id]}" = category[:category_name]
+          h4 Artikelbild:
+          input#product_image_input type="file" name="item-picture" accept="image/*"
+      section#lower
+        h4 Beskrivning:
+        textarea#item-description name="item-description" form="update_item_form" == item_description
+
+  javascript:
+      document.getElementById("product_image_input").onchange = show_preview_image;

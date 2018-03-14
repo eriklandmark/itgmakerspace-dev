@@ -96,16 +96,3 @@ end
 def log(msg)
   puts '[LOG] ' + msg.to_s
 end
-
-def error_msg(msg)
-  puts '[Error] ' + msg.to_s
-end
-
-def log_error(msg:, e:, request:)
-  log_dir = Dir.pwd + '/logs/'
-  file_name = 'ErrorLog-' + Time.now.strftime('%Y%m%d_%H%M%S')
-  file_content = "New error accured! #{request.ip} tried to access #{request.path} but internal error accured! \n
-  Message: #{e.message} \n
-  Backtrace: \n
-  #{e.backtrace}"
-end

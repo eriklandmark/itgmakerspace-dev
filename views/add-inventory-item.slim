@@ -3,37 +3,39 @@
 
 #add-inventory-item.main
   #main
-    - if item_id == "-1"
-      h2 Lägg till ny artikel
-    - else
-      h2 Redigera artikel: #{item_name}
-    form#update_item_form action="/update-inventory-item" method="post" enctype="multipart/form-data"
-      input type="hidden" name="item-id" value="#{item_id}"
+    h2 Lägg till ny artikel
+    form#update_item_form action="/inventory/new" method="post" enctype="multipart/form-data"
       #actions
         input type="submit" value="Spara"
         input type="reset" value="Återställ"
       section#upper
         #product_image_div
           section
-            - if item_id == "-1"
-              img#product_image src="#" alt="Artikelbild saknas.."
-            - else
-              img#product_image src="/product_images/product_#{item_id}.jpg" onchange="show_preview_image()" alt="Artikelbild saknas.."
+            img#product_image src="#" alt="Lägg till artikelbild.."
         #product_info_div
           h4 Artikelnamn:
           input type="text" name="item-name" value="#{item_name}" required="required"
-          h4 Antal i lager:
-          input type="number" name="item-quantity" value="#{item_quantity}" required="required" pattern="{1,}"
-          h4 Streckkod:
-          input type="text" name="item-barcode" value="#{item_barcode}" required="required"
-          h4 Kategori:
-          select name="item-category" required="required"
-            option value="0" ...Välj Kategori...
-            - get_categories.each do |category|
-              - if category[:category_id] == item_category
-                option value="#{category[:category_id]}" selected="selected" = category[:category_name]
-              - else
-                option value="#{category[:category_id]}" = category[:category_name]
+          table
+            tr
+              td
+                h4 Streckkod:
+              td
+                h4 Antal i lager:
+              td
+                h4 Kategori:
+            tr
+              td
+                input type="text" name="item-barcode" value="#{item_barcode}" required="required" id="item-barcode"
+              td
+                input type="number" name="item-quantity" value="#{item_quantity}" required="required" pattern="{1,}"
+              td
+                select name="item-category" required="required"
+                  option value="0" ...Välj Kategori...
+                  - get_categories.each do |category|
+                    - if category[:category_id] == item_category
+                      option value="#{category[:category_id]}" selected="selected" = category[:category_name]
+                    - else
+                      option value="#{category[:category_id]}" = category[:category_name]
           h4 Artikelbild:
           input#product_image_input type="file" name="item-picture" accept="image/*"
       section#lower
@@ -42,17 +44,3 @@
 
   javascript:
       document.getElementById("product_image_input").onchange = show_preview_image;
-
-      function show_preview_image() {
-          var input = document.getElementById("product_image_input");
-          if (input.files && input.files[0]) {
-              var reader = new FileReader();
-
-              reader.onload = function (e) {
-                  var image = document.getElementById("product_image");
-                  image.src = e.target.result;
-              };
-
-              reader.readAsDataURL(input.files[0]);
-          }
-      }

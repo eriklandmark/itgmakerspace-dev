@@ -9,11 +9,14 @@ require "net/https"
 require "uri"
 require 'pp'
 
+require_relative 'ErrorHandler'
 require_relative 'DatabaseHandler'
 require_relative 'app'
 require_relative 'lib'
 
 register Sinatra::DefaultCharset
+
+use Rack::MethodOverride
 
 configure :development do
   puts 'In Development Environment'

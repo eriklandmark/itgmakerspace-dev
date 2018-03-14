@@ -11,15 +11,11 @@ class App < Sinatra::Base
   set :default_charset, 'utf-8'
 
   not_found do
-    status 404
-    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (404)")
-    slim :error_page, :locals => {:error_code => '404', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
+    ErrorHandler.e_404(self, nil)
   end
 
   error do
-    status 500
-    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men det uppstod ett fel på serversidan.! (#{status})")
-    body(slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'})
+    ErrorHandler.e_500(self, nil)
   end
 
   get '/' do
@@ -51,37 +47,47 @@ class App < Sinatra::Base
   end
 
   get '/login' do
-    slim :login, :locals => {:login_msg => nil}
+    redirect '/session/new'
   end
 
-  post '/login' do
-    user = Users.first(:email => params['user_email'].downcase)
-    if user != nil
-      if BCrypt::Password.new(user.password) == params['user_password']
-        puts params['user_email'] + ' logged in!'
-        session[:user_email] = params['user_email']
-        session[:user_full_name] = user.name
-        session[:user_id] = user.id
-        session[:permission_level] = user.permission_level
+  get '/session/new' do
+    if session[:user_id].nil?
+      slim :login
+    else
+      redirect "/users/#{session[:user_id]}"
+    end
+  end
 
-        redirect '/'
+  post '/session' do
+    user = Users.first(:email => params['user_email'].downcase)
+    if session[:user_id].nil?
+      if user != nil
+        if BCrypt::Password.new(user.password) == params['user_password']
+          session[:user_full_name] = user.name
+          session[:user_id] = user.id
+          session[:permission_level] = user.permission_level
+
+          redirect '/'
+        else
+          ErrorHandler.e_500(self, "Fel lösenord!")
+        end
       else
-        'Wrong password!'
+        ErrorHandler.e_500(self, "Användaren finns tyvärr inte..")
       end
     else
-      params['user_email'] + " doesn't exist!"
+      redirect "/users/#{session[:user_id]}"
     end
   end
 
-  get '/register' do
-    if session[:user_email] == nil
+  get '/users/new' do
+    if session[:user_id].nil?
       slim :register
     else
-      slim :error_page, :locals => {:error_code => '403', :error_code_msg => "Tyvärr! Du får inte tillgång till denna sida när du är inloggad.<br>Logga ut först för att få tillgång till denna sida."}
+      ErrorHandler.e_403(self, "Tyvärr! Du får inte tillgång till denna sida när du är inloggad.<br>Logga ut först för att få tillgång till denna sida.")
     end
   end
 
-  post '/register' do
+  post '/users/new' do
     uri = URI.parse("https://www.google.com/recaptcha/api/siteverify?response=#{params['g-recaptcha-response']}&secret=6LdrnTkUAAAAACJ0UTJYDXjV2oVl_DoQsfIVwXm1")
     success = false
     Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
@@ -90,7 +96,7 @@ class App < Sinatra::Base
       success = JSON.parse(response.body)["success"]
     end
 
-    if success
+    if success && session[:user_id].nil?
       u = Users.first(:email => params['email'].downcase)
       if u == nil && params['password1'] == params['password2']
         new_user = {
@@ -103,34 +109,117 @@ class App < Sinatra::Base
         if Users.create(new_user)
           slim :login, :locals => {:login_msg => "#{params['fullname']} är nu registrerad! Logga in nedan."}
         else
-          "fail"
+          ErrorHandler.e_500(self, 'Ojdå.. Detta borde inte hända. Försök igen.')
         end
       else
-        slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
+        ErrorHandler.e_500(self, 'Dina lösenord stämde inte överens. Försök igen!')
       end
     else
-      status 500
-      error_msg("-- #{request.ip} försökte registrera sig men blev stoppad av reCAPTCHA. (#{status})")
-      body(slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'})
+      ErrorHandler.e_403(self, 'Ojdå.. Du blev stoppad av reCAPTCHA. När du vet att du inte är en robbot, försök igen!')
     end
   end
 
-  post '/logout' do
-    session[:user_email] = nil
+  delete '/session' do
     session[:user_full_name] = nil
     session[:user_id] = nil
     session[:permission_level] = nil
     redirect '/'
   end
 
-  get '/my-loans' do
-    begin
+  get '/users/:user_id/edit' do
+    if params[:user_id].to_i == session[:user_id] || (!session[:permission_level].nil? && session[:permission_level] >= 2)
+      user = Users.first(:id => session[:user_id])
+      if user != nil
+        slim :change_password, :locals => {:user_id => params["user_id"]}
+      else
+        ErrorHandler.e_500(self, nil)
+      end
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  patch '/users/:user_id/edit' do
+    if params[:user_id].to_i == session[:user_id] || (!session[:permission_level].nil? && session[:permission_level] >= 2)
+      user = Users.first(:id => session[:user_id])
+      if user != nil
+        if BCrypt::Password.new(user.password) == params['user_password'] && params[:new_password_1] == params[:new_password_2]
+          if user.update(:password => BCrypt::Password.create(params[:new_password_1]))
+            session[:user_full_name] = nil
+            session[:user_id] = nil
+            session[:permission_level] = nil
+
+            redirect '/session/new'
+          end
+        else
+          ErrorHandler.e_500(self, "Lösenorden stämmer inte överense. Försök igen!")
+        end
+      end
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  post '/api/user-authentication' do
+    response = {:status => "false"}
+    sec_key = SecureRandom.hex(20)
+    if params['user_email'].nil?
+      user = Users.first(:id => session[:user_id])
+    else
+      user = Users.first(:email => params['user_email'].downcase)
+    end
+
+    if user != nil
+      if BCrypt::Password.new(user.password) == params['user_password'] && user.update(:security_key => response[:security_key])
+        response[:user_id] = user.id
+        response[:security_key] = sec_key
+        response[:name] = user.name
+        response[:email] = user.email
+        response[:status] = 'true'
+      else
+        response[:status_msg] = "Fel användare och/eller lösenord. Försök igen."
+      end
+    else
+      response[:status_msg] = "Fel användare och/eller lösenord. Försök igen."
+    end
+    response.to_json
+  end
+
+  post '/api/user-exists' do
+    response = {:status => "true"}
+    unless Users.first(:email => params['user_email'].downcase).nil?
+      response[:status] = "false"
+    end
+    response.to_json
+  end
+
+  get '/users/:user_id/loans' do
+    if !params["origin"].nil? && params["origin"] == "2"
+      security_key = params['security_key']
+      user_id = params['user_id']
+      response = {:status => 'false', :status_msg => ''}
+      user = Users.first(:id => user_id)
+      if user != nil && user.security_key == security_key
+        items = []
+        Loans.all(:user_id => user_id, :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}.each do |loan|
+          loan.items.each do |item|
+            if item.status == Loans::ACTIVE
+              items << {:quantity => item.quantity, :item_id => item.item_id, :loan_id => loan.id, :date_loaned => loan.date_loaned, :item_name => Inventory.first(:id => item.item_id).name}
+            end
+          end
+        end
+        response[:status] = 'true'
+        response[:items] = items
+      end
+
+      response.to_json
+    elsif params["user_id"].to_i == session[:user_id] || (!session[:permission_level].nil? && session[:permission_level] >= 2)
       loans_items = []
-      user_id = Users.first(:email => session[:user_email]).id
+      user_id = session[:user_id]
       user_loans = Loans.all(:user_id => user_id, :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}
       total_of_user_loans = Loans.max(:id, :user_id => user_id)
 
-      if total_of_user_loans != nil
+      unless total_of_user_loans.nil? && user_loans.nil?
         total_of_user_loans.times do |id|
           items = []
           date = ''
@@ -148,36 +237,133 @@ class App < Sinatra::Base
         end
       end
       slim :my_loans, :locals => {:loans_items => loans_items}
-    rescue => e
-      p e.message
-      redirect '/'
+    else
+      ErrorHandler.e_403(self, nil)
     end
   end
 
-  post '/check-user-information' do
-    u = Users.first(:email => params['user_email'].downcase)
-    if u != nil
-      if BCrypt::Password.new(u.password) == params['user_password']
-        'true'
-      else
-        'false'
+  post '/users/:user_id/loans/new' do
+    response = {:status => "true"}
+    security_key = params['security_key']
+    user_id = params['user_id']
+    items = params['items']
+    loan_id = Loans.max(:id)
+    if loan_id == nil
+      loan_id = 1
+    else
+      loan_id += 1
+    end
+
+    user = Users.first(:id => user_id)
+    if user == nil
+      response[:status] = "false"
+      response[:status_msg] = "User doesn't exists!"
+    end
+
+    if user.security_key != security_key
+      response[:status] = "false"
+      response[:status_msg] = "Error with user verification try to logout and login again."
+    end
+
+    if response[:status] == "true"
+      items = JSON.parse(items)
+      date = Time.new.strftime('%Y-%m-%d_%H:%M:%S')
+      if Loans.create({
+                          :id => loan_id,
+                          :date_loaned => date,
+                          :status => Loans::ACTIVE,
+                          :user_id => user_id
+                      })
+        items.each do |item|
+          unless Loan_Items.create({
+                                       :loan_id => loan_id,
+                                       :item_id => item['item_id'],
+                                       :quantity => item['quantity'],
+                                       :status => Loans::ACTIVE
+                                   })
+            response[:status] = "false"
+            response[:status_msg] = "Loan did not save!"
+          end
+
+          unless delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
+            response[:status] = "false"
+            response[:status_msg] = "Couldn't update inventory!"
+          end
+        end
       end
-    else
-      'false'
     end
+
+    response.to_json
   end
 
-  post '/check-user-exist' do
-    u = Users.first(:email => params['user_email'].downcase)
-    if u == nil
-      'true'
-    else
-      'false'
+  post '/users/;user_id/loans/delete' do
+    response = {:status => 'false'}
+    origin = params['origin'].to_i
+    user_id = params['user_id'].to_i
+    if params['user_id'] == nil
+      user_id = session[:user_id]
     end
+    item_id = params['item_id'].to_i
+    loan_id = params['loan_id'].to_i
+    quantity = params['quantity'].to_i
+    user = Users.first(:id => user_id)
+    if user != nil
+      proceed = false
+      if origin == 2 && params['security_key'] != nil && user.security_key == params['security_key']
+        proceed = true
+      elsif origin == 1 && user_id != nil
+        proceed = true
+      end
+
+      item = Loan_Items.first(:item_id => item_id, :loan_id => loan_id, :status => Loan_Items::ACTIVE)
+      if item != nil && proceed
+        if item.quantity > quantity
+          if item.update(:quantity => (item.quantity - quantity))
+            add_inventory_item(item_id: item_id, quantity: quantity)
+            response[:status] = 'true'
+          end
+        else
+          old_quantity = item.quantity
+          if item.update({:status => Loan_Items::INACTIVE})
+            add_inventory_item(item_id: item_id, quantity: old_quantity)
+            response[:status] = 'true'
+          end
+        end
+        if Loan_Items.count(:loan_id => loan_id, :status => Loan_Items::ACTIVE) <= 0
+          if Loans.first(:id => loan_id).update(:status => Loans::INACTIVE)
+            response[:status] = 'true'
+          else
+            response[:status] = 'false'
+          end
+        end
+      end
+    end
+
+    response.to_json
   end
 
-  get '/items' do
-    redirect '/inventory'
+  post '/users/:user_id/loans/delete-all' do
+    response = {:status => "true"}
+    user_id = params['user_id'].to_i
+    security_key = params['security_key']
+    user = Users.first(:id => user_id)
+    if user != nil
+      if user.security_key == security_key
+        Loans.all(:user_id => user_id){{:include => "items"}}.each do |loan|
+          unless loan.update(:status => Loans::INACTIVE)
+            response[:status] = "false"
+            response[:status_msg] = "Error deleting loan. [Code: 5001]"
+          end
+          loan.items.each do |item|
+            unless item.update(:status => Loans::INACTIVE)
+              response[:status] = "false"
+              response[:status_msg] = "Error deleting loan. [Code: 5002]"
+            end
+          end
+        end
+      end
+    end
+    response.to_json
   end
 
   get '/inventory' do
@@ -222,248 +408,7 @@ class App < Sinatra::Base
     end
   end
 
-  get '/inventory/:item_id' do
-    if params[:item_id] != nil && params[:item_id] != ''
-      item = Inventory.first(:id => params[:item_id])
-      if item != nil
-        q = 0
-        if item.quantity > 0
-          q = item.quantity
-        end
-
-        inventory_item_names = []
-        Inventory.all(:order => [:name, :asc]).each do |i|
-          inventory_item_names << i.name
-        end
-
-        slim :item_page, :locals => {
-            :item_id => item.id,
-            :item_name => item.name,
-            :item_quantity => q,
-            :item_description => item.description.nil? || item.description == '' ? 'Description to be added' : item.description,
-            :item_category => item.category.nil? ? 0 : item.category,
-            :item_category_name => item.category.nil? ? "Alla" : Categories.first(:id => item.category).name,
-            :inventory_item_names => inventory_item_names
-        }
-      else
-        redirect '/inventory'
-      end
-    else
-      redirect '/inventory'
-    end
-  end
-
-  get '/change-password' do
-    user = Users.first(:email => session[:user_email])
-    if user != nil
-      slim :change_password, :locals => {:user_email => params[:user_email]}
-    else
-      error_msg("#{session[:user_email]} försökte ändra lösenord men fel uppstod: (404) User not found!")
-      slim :change_password, :locals => {:error_code => '', :error_code_msg => 'Serverfel uppstod! Testa att logga ut och logga in igen!'}
-    end
-  end
-
-  post '/change-password' do
-    begin
-      user = Users.first(:id => session[:user_id])
-      if user != nil
-        if BCrypt::Password.new(user.password) == params['user_password'] && params[:new_password_1] == params[:new_password_2]
-          if user.update(:password => BCrypt::Password.create(params[:new_password_1]))
-            session[:user_email] = nil
-            session[:user_full_name] = nil
-            session[:user_id] = nil
-            session[:permission_level] = nil
-
-            redirect '/login'
-          end
-        else
-          'Wrong password!'
-        end
-      end
-    rescue
-      puts 'Fel uppstod! Lösenords ändring.'
-    end
-  end
-
-  post '/auth' do
-    response = {:status => 'false', :status_msg => ''}
-    user = Users.first(:email => params['email'].downcase)
-    if user != nil
-      if BCrypt::Password.new(user.password) == params['password']
-        response[:status] = 'true'
-        response[:user_id] = user.id
-        response[:security_key] = SecureRandom.hex(20)
-        response[:name] = user.name
-        response[:email] = user.email
-        p user.update(:security_key => response[:security_key])
-      else
-        response[:status_msg] = 'Fel anvandarnamn eller lösenord. Försök igen!'
-      end
-    else
-      response[:status_msg] = 'Fel användarnamn eller lösenord. Försök igen!'
-    end
-    response.to_json
-  end
-
-  post '/new-loan' do
-    security_key = params['security_key']
-    user_id = params['user_id']
-    items = params['items']
-    loan_id = Loans.max(:id)
-    if loan_id == nil
-      loan_id = 1
-    else
-      loan_id += 1
-    end
-
-    user = Users.first(:id => user_id)
-    if user == nil
-      return "User doesn't exists!"
-    end
-
-    if user.security_key != security_key
-      return "Security keys doesn't match!"
-    end
-
-    items = JSON.parse(items)
-    date = Time.new.strftime('%Y-%m-%d_%H:%M:%S')
-    if Loans.create({
-                        :id => loan_id,
-                        :date_loaned => date,
-                        :status => Loans::ACTIVE,
-                        :user_id => user_id
-                    })
-      items.each do |item|
-        unless Loan_Items.create({
-            :loan_id => loan_id,
-            :item_id => item['item_id'],
-            :quantity => item['quantity'],
-            :status => Loans::ACTIVE
-        })
-          return 'Item did not save!'
-        end
-
-        unless delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
-          return 'Something went wrong with the database!'
-        end
-      end
-    end
-
-    'true'
-  end
-
-  post '/get-all-user-loans' do
-    security_key = params['security_key']
-    user_id = params['user_id']
-    response = {:status => 'false', :status_msg => ''}
-    user = Users.first(:id => user_id)
-    if user != nil && user.security_key == security_key
-      items = []
-      Loans.all(:user_id => user_id, :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}.each do |loan|
-        loan.items.each do |item|
-          if item.status == Loans::ACTIVE
-            items << {:quantity => item.quantity, :item_id => item.item_id, :loan_id => loan.id, :date_loaned => loan.date_loaned, :item_name => Inventory.first(:id => item.item_id).name}
-          end
-        end
-      end
-      response[:status] = 'true'
-      response[:items] = items
-    end
-
-    JSON.generate(response)
-  end
-
-  post '/remove-loan-item' do
-    response = {:status => 'false'}
-
-    begin
-      origin = params['origin'].to_i
-      user_id = params['user_id'].to_i
-      if params['user_id'] == nil
-        user_id = session[:user_id]
-      end
-      item_id = params['item_id'].to_i
-      loan_id = params['loan_id'].to_i
-      quantity = params['quantity'].to_i
-      user = Users.first(:id => user_id)
-      if user != nil
-        proceed = false
-        if origin == 2 && params['security_key'] != nil && user.security_key == params['security_key']
-          proceed = true
-        elsif origin == 1
-          proceed = true
-        end
-
-        item = Loan_Items.first(:item_id => item_id, :loan_id => loan_id, :status => Loan_Items::ACTIVE)
-        if item != nil && proceed
-          if item.quantity > quantity
-            if item.update(:quantity => (item.quantity - quantity))
-              add_inventory_item(item_id: item_id, quantity: quantity)
-              response[:status] = 'true'
-            end
-          else
-            old_quantity = item.quantity
-            if item.update({:status => Loan_Items::INACTIVE})
-              add_inventory_item(item_id: item_id, quantity: old_quantity)
-              response[:status] = 'true'
-            end
-          end
-          if Loan_Items.count(:loan_id => loan_id, :status => Loan_Items::ACTIVE) <= 0
-            if Loans.first(:id => loan_id).update(:status => Loans::INACTIVE)
-              response[:status] = 'true'
-            else
-              response[:status] = 'false'
-            end
-          end
-        end
-      end
-    rescue
-      puts 'Fel uppstod med när man skulle lämna tillbaka en lånad sak.'
-    end
-
-    response.to_json
-  end
-
-  post '/remove-all-loan-item' do
-    user_id = params['user_id'].to_i
-    security_key = params['security_key']
-    user = Users.first(:id => user_id)
-    if user != nil
-      if user.security_key == security_key
-        Loans.all(:user_id => user_id){{:include => "items"}}.each do |loan|
-          unless loan.update(:status => Loans::INACTIVE)
-            "false"
-          end
-          loan.items.each do |item|
-            unless item.update(:status => Loans::INACTIVE)
-              "false"
-            end
-          end
-        end
-        "true"
-      end
-    end
-    "false"
-  end
-
-  get '/error' do
-    if params["id"] == "500"
-      status 500
-      error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men det uppstod ett fel på serversidan.! (#{status})")
-      slim :error_page, :locals => {:error_code => '500', :error_code_msg => 'Ojdå.. Något hände! En rapport har skapats angående felet.'}
-    else
-      status 404
-      error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (404)")
-      slim :error_page, :locals => {:error_code => '404', :error_code_msg => 'Ledsen kompis kunde inte hitta det du sökte efter..'}
-    end
-  end
-
-  get '/3d-skrivare' do
-    slim :'3d-skrivare'
-    #slim :under_construction
-  end
-
-  get '/add-inventory-item' do
+  get '/inventory/new' do
     unless session[:user_id].nil? && session[:permission_level].nil?
       if session[:permission_level] >= 2
         return slim(:"add-inventory-item", :locals => {
@@ -472,108 +417,107 @@ class App < Sinatra::Base
             :item_barcode => "",
             :item_category => 0,
             :item_quantity => 1,
-            :item_description => ""
+            :item_description => "",
+            :action => "new"
         })
       end
     end
 
-    status 403
-    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
-    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+    ErrorHandler.e_403(self, nil)
   end
 
-  get '/edit-inventory-item/:item_id' do
+  post '/inventory/new' do
     unless session[:user_id].nil? && session[:permission_level].nil?
+      if session[:permission_level] >= 2
+        id = Inventory.max(:id).to_i + 1
+
+        if Inventory.create({
+                                :id => id,
+                                :name => params["item-name"],
+                                :barcode => params["item-barcode"],
+                                :quantity => params["item-quantity"].to_i,
+                                :description => params["item-description"],
+                                :category => params["item-category"],
+                                :stock_quantity => params["item-quantity"].to_i
+                            })
+          unless params[:"item-picture"].nil?
+            if File.exists?("./public/product_images/product_#{id}.jpg")
+              File.delete("./public/product_images/product_#{id}.jpg")
+            end
+
+            File.open("./public/product_images/product_#{id}.jpg", "w") do |file|
+              file.write(params['item-picture'][:tempfile].read)
+            end
+          end
+
+          redirect '/inventory'
+        else
+          ErrorHandler.e_500(self, nil)
+        end
+      end
+    end
+  end
+
+  get '/inventory/:item_id/edit' do
+    if !session[:user_id].nil? && !session[:permission_level].nil?
       if session[:permission_level] >= 2
         item = Inventory.first(:id => params["item_id"])
 
         if item.nil?
           return status 404
         else
-          return slim(:"add-inventory-item", :locals => {
+          return slim(:"update-inventory-item", :locals => {
               :item_id => params["item_id"],
               :item_name => item.name,
               :item_barcode => item.barcode,
               :item_category => item.category,
               :item_quantity => item.quantity,
-              :item_description => item.description
+              :item_description => item.description,
+              :action => "edit"
           })
         end
       end
     end
 
-    status 403
-    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
-    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+    ErrorHandler.e_403(self, nil)
   end
 
-  post '/update-inventory-item' do
+  patch '/inventory/:item_id/edit' do
     unless session[:user_id].nil? && session[:permission_level].nil?
       if session[:permission_level] >= 2
-        if params["item-id"] == "-1"
-          id = Inventory.max(:id).to_i + 1
-          item = Inventory.create({
-              :id => id,
+        item = Inventory.first(:id => params["item_id"])
+
+        unless item.nil?
+          item_update = {
               :name => params["item-name"],
               :barcode => params["item-barcode"],
               :quantity => params["item-quantity"].to_i,
               :description => params["item-description"],
               :category => params["item-category"],
               :stock_quantity => params["item-quantity"].to_i
-          })
+          }
 
-          if item
+          if item.update(item_update)
             unless params[:"item-picture"].nil?
-              if File.exists?("./public/product_images/product_#{params["item-id"]}.jpg")
-                File.delete("./public/product_images/product_#{params["item-id"]}.jpg")
+              if File.exists?("./public/product_images/product_#{params["item_id"]}.jpg")
+                File.delete("./public/product_images/product_#{params["item_id"]}.jpg")
               end
 
-              File.open("./public/product_images/product_#{params["item-id"]}.jpg", "w") do |file|
-                file.write(params['item-picture'][:tempfile].read)
+              File.open("./public/product_images/product_#{params["item_id"]}.jpg", "w") do |file|
+                file.write(params[:"item-picture"][:tempfile].read)
               end
             end
 
-            redirect '/inventory'
-          else
-            status 500
-          end
-        else
-          item = Inventory.first(:id => params["item-id"])
-
-          unless item.nil?
-            item_update = {
-                :name => params["item-name"],
-                :barcode => params["item-barcode"],
-                :quantity => params["item-quantity"].to_i,
-                :description => params["item-description"],
-                :category => params["item-category"],
-                :stock_quantity => params["item-quantity"].to_i
-            }
-
-            if item.update(item_update)
-              unless params[:"item-picture"].nil?
-                if File.exists?("./public/product_images/product_#{params["item-id"]}.jpg")
-                  File.delete("./public/product_images/product_#{params["item-id"]}.jpg")
-                end
-
-                File.open("./public/product_images/product_#{params["item-id"]}.jpg", "w") do |file|
-                  file.write(params[:"item-picture"][:tempfile].read)
-                end
-              end
-
-              redirect "/inventory/#{params["item-id"]}"
-            end
+            redirect "/inventory/#{params["item_id"]}"
           end
         end
       end
     end
 
-    status 403
-    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
-    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+    ErrorHandler.e_403(self, nil)
   end
 
-  get '/delete-inventory-item/:item_id' do
+  delete '/inventory/:item_id/delete' do
     unless session[:user_id].nil? && session[:permission_level].nil?
       if session[:permission_level] >= 2
         unless params["item_id"].nil?
@@ -586,43 +530,71 @@ class App < Sinatra::Base
 
             redirect '/inventory'
           else
-            status 500
+            ErrorHandler.e_500(self, nil)
           end
         end
       end
     end
 
-    status 403
-    error_msg("-- #{request.ip} försökte söka in på #{request.path_info} men blev nekad! (403)")
-    slim :error_page, :locals => {:error_code => '403', :error_code_msg => 'Ledsen men du har inte tillåtelse till det här..'}
+    ErrorHandler.e_403(self, nil)
   end
 
-  get '/dev/society' do
-    erb :society
-  end
+  get '/inventory/:item_id' do
+    if params[:item_id] != nil && params[:item_id] != ''
+      if params[:item_id][0..1] == 'b-'
+        response = {:status => 'false'}
+        if params["origin"] != nil && params["origin"].to_i == 2
+          barcode = params[:item_id][2..-1]
+          item = Inventory.first(:barcode => barcode)
 
-  post '/get-item-from-barcode' do
-    response = {:status => 'false'}
-    if params["origin"] != nil && params["origin"].to_i == 2
-      barcode = params["barcode"]
-      p barcode
-      item = Inventory.first(:barcode => barcode)
-
-      if item != nil
-        response[:status] = 'true'
-        response[:item] = {
-            :id => item.id,
-            :name => item.name,
-            :quantity => item.quantity,
-            :description => item.description,
-            :barcode => item.barcode
-        }
+          if item != nil
+            response[:status] = 'true'
+            response[:item] = {
+                :id => item.id,
+                :name => item.name,
+                :quantity => item.quantity,
+                :description => item.description,
+                :barcode => item.barcode
+            }
+          else
+            response[:status_msg] = "Coudn't find the item with barcode: #{barcode}"
+          end
+        else
+          redirect("/inventory/#{Inventory.first(:barcode => params[:item_id][2..-1]).id}")
+        end
+        response.to_json
       else
-        response[:status_msg] = "Coudn't find the item with barcode: #{barcode}"
+        item = Inventory.first(:id => params[:item_id])
+        if item != nil
+          q = 0
+          if item.quantity > 0
+            q = item.quantity
+          end
+
+          inventory_item_names = []
+          Inventory.all(:order => [:name, :asc]).each do |i|
+            inventory_item_names << i.name
+          end
+
+          slim :item_page, :locals => {
+              :item_id => item.id,
+              :item_name => item.name,
+              :item_quantity => q,
+              :item_description => item.description.nil? || item.description == '' ? 'Description to be added' : item.description,
+              :item_category => item.category.nil? ? 0 : item.category,
+              :item_category_name => item.category.nil? ? "Alla" : Categories.first(:id => item.category).name,
+              :inventory_item_names => inventory_item_names
+          }
+        else
+          redirect '/inventory'
+        end
       end
     else
-      response[:status_msg] = "403: Request denied!"
+      redirect '/inventory'
     end
-    response.to_json
+  end
+
+  get '/wiki' do
+    slim :wiki
   end
 end

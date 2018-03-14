@@ -10,20 +10,21 @@ article#item_main.main
       section
         div
           h4#item_category
-            | Kategori:
+            = "Kategori: "
             a href="/inventory?category=#{item_category}" = " " + item_category_name
-        form action="/delete-inventory-item/#{item_id}" method="get"
+        form action="/inventory/#{item_id}/delete" method="post"
+          input id="hidden" type="hidden" name="_method" value="delete"
           input type="submit" value="Ta bort artikel"
-        form action="/edit-inventory-item/#{item_id}" method="get"
+        form action="/inventory/#{item_id}/edit" method="get"
           input type="submit" value="Redigera artikel"
     - else
       h4#item_category
-        | Kategori:
-        a href="/inventory?category=#{item_category}" = " " + item_category_name
+        = "Kategori: "
+        a href="/inventory?category=#{item_category}" = item_category_name
     div#item_info
       #item_image
         img alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.jpg" /
       #item_header
         h2 = item_name
         h4 Antal i lager: #{item_quantity}
-      p#item_description= item_description
+      p#item_description == item_description

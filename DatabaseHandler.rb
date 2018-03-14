@@ -5,6 +5,10 @@ module DatabaseHandler
     $database = SQLite3::Database.new(db_path)
   end
 
+  def initialize_table
+
+  end
+
   class Table
 
     def self.attribute(*args)

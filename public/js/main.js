@@ -139,6 +139,7 @@ window.addEventListener("resize", function () {
         }
     }
 }, true);
+
 window.addEventListener("click", function (e) {
     var menu = document.getElementById("user_menu");
     if(menu.style.visibility === "visible") {
@@ -155,7 +156,7 @@ window.addEventListener("click", function (e) {
 
         var minx = menu.offsetLeft;
         var maxx = menu.offsetLeft + menu.offsetWidth;
-        var miny = menu.offsetTop + 38;
+        var miny = menu.offsetTop;
         var maxy = menu.offsetTop + menu.offsetHeight;
 
         if(!(x >= minx && x <= maxx && y >= miny && y <= maxy)) {
@@ -196,7 +197,7 @@ function delete_item(loan_id,item_id, id, table_id) {
     data.append("item_id", item_id);
     data.append("quantity", 1);
     data.append("origin", 1);
-    newServerAjaxCall("/remove-loan-item", data, function (response) {
+    newServerAjaxCall("/loans/delete", data, function (response) {
         var obj = JSON.parse(response);
         if (obj.status === "true") {
             var row = document.getElementById("table_item_quantity_" + id);
@@ -226,11 +227,12 @@ function on_login_submit() {
     var login_info = new FormData();
     login_info.append("user_email", document.getElementById("login_email").value);
     login_info.append("user_password", document.getElementById("login_password").value);
-    newServerAjaxCall("/check-user-information", login_info, function (response) {
-        if (response === "true") {
+    newServerAjaxCall("/api/user-authentication", login_info, function (resp) {
+        var response = JSON.parse(resp);
+        if (response.status === "true") {
             document.getElementById("login_form").submit();
         } else {
-            document.getElementById("error_msg").innerHTML = "Fel lösenord eller användarnamn!";
+            document.getElementById("error_msg").innerHTML = response.status_msg;
         }
     });
 }
@@ -243,9 +245,8 @@ function login_form_keypress(event) {
     }
 }
 
-function on_change_pass_submit(email) {
+function on_change_pass_submit() {
     var login_info = new FormData();
-    login_info.append("user_email", email);
     login_info.append("user_password", document.getElementById("user_password").value);
     if(document.getElementById("user_password").value === "" || document.getElementById("new_password_1").value === "" || document.getElementById("new_password_2").value === "") {
         document.getElementById("error_msg").innerHTML = "Du har inte fyllt i alla fält än!";
@@ -257,11 +258,26 @@ function on_change_pass_submit(email) {
         return;
     }
 
-    newServerAjaxCall("/check-user-information", login_info, function (response) {
-        if (response === "true") {
+    newServerAjaxCall("/api/user-authentication", login_info, function (resp) {
+        var response = JSON.parse(resp);
+        if (response.status === "true") {
             document.getElementById("chg_pass_form").submit();
         } else {
-            document.getElementById("error_msg").innerHTML = "Fel lösenord! Försök igen.";
+            document.getElementById("error_msg").innerHTML = response.status_msg;
         }
     });
+}
+
+function show_preview_image() {
+    var input = document.getElementById("product_image_input");
+    if (input.files && input.files[0]) {
+        var reader = new FileReader();
+
+        reader.onload = function (e) {
+            var image = document.getElementById("product_image");
+            image.src = e.target.result;
+        };
+
+        reader.readAsDataURL(input.files[0]);
+    }
 }
