@@ -38,7 +38,7 @@ html
         #user_menu_items
           a href="/users/#{session[:user_id]}/loans"  Mina lån
           a href="/users/#{session[:user_id]}/edit"  Ändra lösenord
-          form#logout_form action="/session" method="post"
+          form#logout_form action="/session/delete" method="post"
             input type="hidden" name="_method" value="delete"
             p onclick="document.getElementById('logout_form').submit()"  Logga ut
     nav#nav_mobile

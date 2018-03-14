@@ -119,7 +119,7 @@ class App < Sinatra::Base
     end
   end
 
-  delete '/session' do
+  delete '/session/delete' do
     session[:user_full_name] = nil
     session[:user_id] = nil
     session[:permission_level] = nil
