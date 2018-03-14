@@ -1,14 +1,16 @@
 class App < Sinatra::Base
+  use Rack::MethodOverride
+  helpers Sinatra::ContentFor
+
   if settings.production?
     use Rack::SslEnforcer, :redirect_to => 'https://itgmaker.space'
   end
-
-  helpers Sinatra::ContentFor
 
   enable :sessions
   set :session_secret, 'itg-makerspace'
   set :show_exceptions, false
   set :default_charset, 'utf-8'
+  set :method_override, true
 
   not_found do
     ErrorHandler.e_404(self, nil)

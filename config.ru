@@ -16,8 +16,6 @@ require_relative 'lib'
 
 register Sinatra::DefaultCharset
 
-use Rack::MethodOverride
-
 configure :development do
   puts 'In Development Environment'
 
