@@ -53,6 +53,7 @@ end
 
 class Inventory < DatabaseHandler::Table
   table_name "inventory_items"
+
   attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
   attribute "name", "VARCHAR(50)"
   attribute "barcode", "VARCHAR(10)"
@@ -60,6 +61,7 @@ class Inventory < DatabaseHandler::Table
   attribute "quantity", "Integer"
   attribute "category", "Integer"
   attribute "stock_quantity", "Integer"
+  attribute "specs", "VARCHAR(16655)"
 
   init_table
 

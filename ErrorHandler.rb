@@ -10,7 +10,7 @@ class ErrorHandler
   end
 
   def self.e_404(app, msg)
-    app.status 404
+    #app.status 404
     error_msg("(404) -- #{app.request.ip} Unknown resource: #{app.request.path_info}")
     if msg.nil?
       app.slim :error_page, :locals => {:error_code => '404', :error_msg => 'Ledsen kompis men kunde inte hitta det du sökte efter..'}

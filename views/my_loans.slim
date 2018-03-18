@@ -28,4 +28,4 @@ article#my_loans_main.main
               td.quantity id="table_item_quantity_#{id}"
                 p.table_item = item[:quantity]
               td
-                input onclick="delete_item(#{user_id},#{item[:loan_id]},#{item[:item_id]}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka")
+                input onclick="delete_item(#{session[:user_id]},#{item[:loan_id]},#{item[:item_id]}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka")

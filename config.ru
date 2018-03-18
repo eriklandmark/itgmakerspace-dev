@@ -7,7 +7,6 @@ require 'rack/ssl-enforcer'
 require 'rack/rewrite'
 require "net/https"
 require "uri"
-require 'pp'
 
 require_relative 'ErrorHandler'
 require_relative 'DatabaseHandler'

@@ -191,13 +191,13 @@ function open_link(link) {
     }
 }
 
-function delete_item(loan_id,item_id, id, table_id) {
+function delete_item(user_id, loan_id,item_id, id, table_id) {
     var data = new FormData();
     data.append("loan_id", loan_id);
     data.append("item_id", item_id);
     data.append("quantity", 1);
     data.append("origin", 1);
-    newServerAjaxCall("/loans/delete", data, function (response) {
+    newServerAjaxCall("/users/" + user_id + "/loans/delete", data, function (response) {
         var obj = JSON.parse(response);
         if (obj.status === "true") {
             var row = document.getElementById("table_item_quantity_" + id);
@@ -274,10 +274,42 @@ function show_preview_image() {
         var reader = new FileReader();
 
         reader.onload = function (e) {
-            var image = document.getElementById("product_image");
-            image.src = e.target.result;
+            document.getElementById("product_image").src = e.target.result;
+            document.getElementById("item_spec_image").src = e.target.result;
         };
 
         reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function update_item_page_preview() {
+    document.getElementById("item-description-preview").innerHTML = document.getElementById("item-description").value;
+    document.getElementById("item_specs").innerHTML = "";
+    var json_specs = document.getElementById("item-specs").value;
+    if (json_specs !== null && json_specs !== "") {
+        var specs = JSON.parse(json_specs);
+        for(var obj in specs){
+            var table = document.createElement("table");
+            if(specs.hasOwnProperty(obj)){
+                for(var prop in specs[obj]){
+                    if(specs[obj].hasOwnProperty(prop)){
+                        var key = document.createElement("td");
+                        var value = document.createElement("td");
+                        key.id = "spec_title";
+                        value.id = "spec_value";
+                        key.innerText = prop.toString();
+                        value.innerText = specs[obj][prop].toString();
+                        var row = document.createElement("tr");
+                        row.appendChild(key);
+                        row.appendChild(value);
+                        table.appendChild(row);
+                    }
+                }
+            }
+            var title = document.createElement("h4");
+            title.innerText = obj.toString();
+            document.getElementById("item_specs").appendChild(title);
+            document.getElementById("item_specs").appendChild(table);
+        }
     }
 }

@@ -58,7 +58,7 @@ def get_inventory_names
 end
 
 def update_inventory_items
-  all_loans = Loans.all{{:include => "items"}}
+  all_loans = Loans.all(:status => Loans::ACTIVE){{:include => "items"}}
   if all_loans.length >= 1
     all_loans.each do |loan|
       loan.items.each do |item|

@@ -22,9 +22,21 @@ article#item_main.main
         = "Kategori: "
         a href="/inventory?category=#{item_category}" = item_category_name
     div#item_info
-      #item_image
-        img alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.jpg" /
       #item_header
-        h2 = item_name
-        h4 Antal i lager: #{item_quantity}
+        h1 = item_name
+        h3 Antal i lager: #{item_quantity}
+      #item_specs
+        #item_image
+          img alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.jpg" /
+        - unless item_specs.nil?
+          .item_divider
+          - item_specs.keys.each do |title|
+            h4 = title.to_s
+            table
+              - item_specs[title].keys.each do |key|
+                tr
+                  td
+                    p#spec_title = key.to_s
+                  td
+                    p#spec_value = item_specs[title][key].to_s
       p#item_description == item_description

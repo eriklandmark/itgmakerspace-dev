@@ -52,6 +52,10 @@ class App < Sinatra::Base
     redirect '/session/new'
   end
 
+  get '/register' do
+    redirect '/users/new'
+  end
+
   get '/session/new' do
     if session[:user_id].nil?
       slim :login
@@ -68,7 +72,6 @@ class App < Sinatra::Base
           session[:user_full_name] = user.name
           session[:user_id] = user.id
           session[:permission_level] = user.permission_level
-
           redirect '/'
         else
           ErrorHandler.e_500(self, "Fel lösenord!")
@@ -298,7 +301,7 @@ class App < Sinatra::Base
     response.to_json
   end
 
-  post '/users/;user_id/loans/delete' do
+  post '/users/:user_id/loans/delete' do
     response = {:status => 'false'}
     origin = params['origin'].to_i
     user_id = params['user_id'].to_i
@@ -385,12 +388,17 @@ class App < Sinatra::Base
     if db_inventory != nil && db_inventory.length > 0
       if !(search_term.length > 0 && db_inventory.length < 2)
         db_inventory.each do |item|
+          q = 0
+          if item.quantity > 0
+            q = item.quantity
+          end
+
           item = {
               :id => item.id,
               :name => item.name,
               :barcode => item.barcode,
-              :description => item.description.nil? || item.description == '' ? 'Description to be added' : item.description,
-              :quantity => item.quantity,
+              :description => item.description.nil? || item.description == '' ? 'Beskrivning kommer inom kort.' : item.description,
+              :quantity => q,
               :category => item.category
           }
 
@@ -420,7 +428,7 @@ class App < Sinatra::Base
             :item_category => 0,
             :item_quantity => 1,
             :item_description => "",
-            :action => "new"
+            :item_specs => ""
         })
       end
     end
@@ -440,7 +448,8 @@ class App < Sinatra::Base
                                 :quantity => params["item-quantity"].to_i,
                                 :description => params["item-description"],
                                 :category => params["item-category"],
-                                :stock_quantity => params["item-quantity"].to_i
+                                :stock_quantity => params["item-quantity"].to_i,
+                                :specs => params["item-specs"] == ""? nil : params["item-specs"]
                             })
           unless params[:"item-picture"].nil?
             if File.exists?("./public/product_images/product_#{id}.jpg")
@@ -475,7 +484,7 @@ class App < Sinatra::Base
               :item_category => item.category,
               :item_quantity => item.quantity,
               :item_description => item.description,
-              :action => "edit"
+              :item_specs => item.specs
           })
         end
       end
@@ -496,7 +505,8 @@ class App < Sinatra::Base
               :quantity => params["item-quantity"].to_i,
               :description => params["item-description"],
               :category => params["item-category"],
-              :stock_quantity => params["item-quantity"].to_i
+              :stock_quantity => params["item-quantity"].to_i,
+              :specs => params["item-specs"] == ""? nil : params["item-specs"]
           }
 
           if item.update(item_update)
@@ -544,8 +554,8 @@ class App < Sinatra::Base
   get '/inventory/:item_id' do
     if params[:item_id] != nil && params[:item_id] != ''
       if params[:item_id][0..1] == 'b-'
-        response = {:status => 'false'}
         if params["origin"] != nil && params["origin"].to_i == 2
+          response = {:status => 'false'}
           barcode = params[:item_id][2..-1]
           item = Inventory.first(:barcode => barcode)
 
@@ -556,15 +566,22 @@ class App < Sinatra::Base
                 :name => item.name,
                 :quantity => item.quantity,
                 :description => item.description,
-                :barcode => item.barcode
+                :barcode => item.barcode,
+                :category => item.category
             }
           else
             response[:status_msg] = "Coudn't find the item with barcode: #{barcode}"
           end
+
+          response.to_json
         else
-          redirect("/inventory/#{Inventory.first(:barcode => params[:item_id][2..-1]).id}")
+          item = Inventory.first(:barcode => params[:item_id][2..-1])
+          if item.nil?
+            ErrorHandler.e_404(self, "Kunde inte hitta någon artikel med sträckkoden: #{params[:item_id][2..-1]}")
+          else
+            redirect("/inventory/#{item.id}")
+          end
         end
-        response.to_json
       else
         item = Inventory.first(:id => params[:item_id])
         if item != nil
@@ -582,13 +599,14 @@ class App < Sinatra::Base
               :item_id => item.id,
               :item_name => item.name,
               :item_quantity => q,
-              :item_description => item.description.nil? || item.description == '' ? 'Description to be added' : item.description,
+              :item_description => item.description.nil? || item.description == '' ? 'Beskrivning kommer inom kort.' : item.description,
               :item_category => item.category.nil? ? 0 : item.category,
               :item_category_name => item.category.nil? ? "Alla" : Categories.first(:id => item.category).name,
-              :inventory_item_names => inventory_item_names
+              :inventory_item_names => inventory_item_names,
+              :item_specs => item.specs.nil? ? nil : JSON.parse(item.specs)
           }
         else
-          redirect '/inventory'
+          ErrorHandler.e_404(self, "Kunde inte hitta någon artikel med id: #{params[:item_id]}")
         end
       end
     else

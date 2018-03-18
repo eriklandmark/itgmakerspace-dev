@@ -63,38 +63,73 @@
       }
     }
 
-    #item_image {
+    #item_specs {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      float: right;
+      padding: 10px;
+      border: 1px solid black;
+      width: 300px;
+
       @media (min-width: $max_mobile_width + 1) {
-        float: left;
-        width: 200px;
-        height: 200px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin: 0 40px 30px 0;
-        background-color: white;
+        margin: 0 0 20px 20px;
       }
 
-      @media (max-width: $max_mobile_width) {
-        width: 200px;
-        height: 200px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        margin-bottom: 20px;
-        background-color: white;
-      }
-
-      img {
+      #item_image {
         width: 100%;
+        height: 100%;
+        min-height: 300px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background-color: white;
+
+        @media (min-width: $max_mobile_width + 1) {
+          padding: 10px;
+        }
+
+        img {
+          width: 100%;
+        }
+
+        img[alt] {
+          font-family: "Open Sans", sans-serif;
+          font-size: 1em;
+          text-align: center;
+        }
       }
 
-      img[alt] {
-        font-family: "Open Sans", sans-serif;
-        font-size: 1em;
-        text-align: center;
+      .item_divider {
+        width: 100%;
+        height: 2px;
+        background-color: rgba(0,0,0,0.2);
+      }
+
+      h4 {
+        margin: 10px 0 5px 0;
+      }
+
+      table {
+        padding: 5px;
+        background-color: lightgray;
+        width: 100%;
+        box-sizing : border-box;
+        p {
+          margin: 3px 0;
+        }
+        td {
+          width: 50%;
+        }
+      }
+
+      #spec_title {
+        font-weight: bold;
+      }
+
+      #spec_value {
+        font-style: italic;
       }
     }
 
@@ -110,8 +145,12 @@
         flex-direction: column;
       }
 
-      h2, h4 {
+      h1, h3 {
         margin: 10px 0;
+      }
+
+      h1 {
+        font-size: 2em;
       }
     }
 

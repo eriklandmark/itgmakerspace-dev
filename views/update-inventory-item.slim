@@ -3,12 +3,11 @@
 
 #add-inventory-item.main
   #main
-    h2 Redigera artikel: #{item_name}
     form#update_item_form action="/inventory/#{item_id}/edit" method="post" enctype="multipart/form-data"
       input id="hidden" type="hidden" name="_method" value="patch"
       #actions
+        h2 Redigera artikel: #{item_name}
         input type="submit" value="Spara"
-        input type="reset" value="Återställ"
       section#upper
         #product_image_div
           section
@@ -39,9 +38,22 @@
                       option value="#{category[:category_id]}" = category[:category_name]
           h4 Artikelbild:
           input#product_image_input type="file" name="item-picture" accept="image/*"
+          h4 Artikel specifikationer:
+          textarea#item-specs name="item-specs" form="update_item_form" = item_specs
       section#lower
-        h4 Beskrivning:
-        textarea#item-description name="item-description" form="update_item_form" == item_description
+        h3 Beskrivning:
+        textarea#item-description name="item-description" form="update_item_form" = item_description
+        div#preview_actions
+          h3 Preview:
+          input type="button" value="Update" onclick="update_item_page_preview()"
+        #item_page_preview
+          #item_specs_div
+            #item_image
+              img#item_spec_image alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.jpg" /
+            .item_divider
+            #item_specs
+          p#item-description-preview
 
   javascript:
       document.getElementById("product_image_input").onchange = show_preview_image;
+      update_item_page_preview();
