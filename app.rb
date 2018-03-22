@@ -22,30 +22,21 @@ class App < Sinatra::Base
 
   get '/' do
     dates = nil
-    File.open('meeting_dates.json', 'r') do |file|
-      dates = JSON.parse(file.read)
-    end
-    year, month, day = ''
-    hour = '15'
-    started = false
-
-    dates['dates'].each do |date|
-      if DateTime.new(date['year'].to_i, get_month_num_from_name(month: date['month']), date['day'].to_i, 15, 00, 00, '+1') > DateTime.now
-        year = date['year']
-        month = date['month']
-        day = date['day']
-        break
-      elsif DateTime.now < DateTime.new(date['year'].to_i, get_month_num_from_name(month: date['month']), date['day'].to_i, 17, 00, 00, '+1')
-        year = date['year']
-        month = date['month']
-        day = date['day']
-        hour = '17'
-        started = true
-        break
+      File.open('meeting_dates.json', 'r') do |file|
+        dates = JSON.parse(file.read)
       end
-    end
+      year, month, day = ''
+      hour = '15'
 
-    slim :index, :locals => {:day => day, :year => year, :month => month, :hour => hour, :started => started}
+      dates['dates'].each do |date|
+        if DateTime.new(date['year'].to_i, get_month_num_from_name(month: date['month']), date['day'].to_i, 15, 00, 00, '+1') > DateTime.now
+          year = date['year']
+          month = date['month']
+          day = date['day']
+          break
+        end
+      end
+    slim :index, :locals => {:day => day, :year => year, :month => month, :hour => hour}
   end
 
   get '/login' do
@@ -290,7 +281,7 @@ class App < Sinatra::Base
             response[:status_msg] = "Loan did not save!"
           end
 
-          unless delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
+          unless Inventory.delete_inventory_item(item_id: item['item_id'], quantity: item['quantity'])
             response[:status] = "false"
             response[:status_msg] = "Couldn't update inventory!"
           end
@@ -324,13 +315,13 @@ class App < Sinatra::Base
       if item != nil && proceed
         if item.quantity > quantity
           if item.update(:quantity => (item.quantity - quantity))
-            add_inventory_item(item_id: item_id, quantity: quantity)
+            Inventory.add_inventory_item(item_id: item_id, quantity: quantity)
             response[:status] = 'true'
           end
         else
           old_quantity = item.quantity
           if item.update({:status => Loan_Items::INACTIVE})
-            add_inventory_item(item_id: item_id, quantity: old_quantity)
+            Inventory.add_inventory_item(item_id: item_id, quantity: old_quantity)
             response[:status] = 'true'
           end
         end
@@ -452,12 +443,17 @@ class App < Sinatra::Base
                                 :specs => params["item-specs"] == ""? nil : params["item-specs"]
                             })
           unless params[:"item-picture"].nil?
-            if File.exists?("./public/product_images/product_#{id}.jpg")
-              File.delete("./public/product_images/product_#{id}.jpg")
+            path = "public/product_images/product_#{id}.#{params[:"item-picture"][:filename].split('.')[-1]}"
+            Dir.foreach("public/product_images").each do |file|
+              File.delete(File.join("public/product_images", file)) if file.include?(id.to_s)
             end
 
-            File.open("./public/product_images/product_#{id}.jpg", "w") do |file|
-              file.write(params['item-picture'][:tempfile].read)
+            if params[:"item-picture"][:type].include?("image")
+              File.open(path, "w") do |file|
+                file.write(params[:"item-picture"][:tempfile].read)
+              end
+            else
+              return ErrorHandler.e_500(self, "You didn't upload a image file. Try again!")
             end
           end
 
@@ -494,34 +490,39 @@ class App < Sinatra::Base
   end
 
   patch '/inventory/:item_id/edit' do
-    unless session[:user_id].nil? && session[:permission_level].nil?
-      if session[:permission_level] >= 2
-        item = Inventory.first(:id => params["item_id"])
+    unless session[:user_id].nil? && session[:permission_level].nil? && session[:permission_level] >= 2
+      item = Inventory.first(:id => params["item_id"])
 
-        unless item.nil?
-          item_update = {
-              :name => params["item-name"],
-              :barcode => params["item-barcode"],
-              :quantity => params["item-quantity"].to_i,
-              :description => params["item-description"],
-              :category => params["item-category"],
-              :stock_quantity => params["item-quantity"].to_i,
-              :specs => params["item-specs"] == ""? nil : params["item-specs"]
-          }
+      unless item.nil?
+        item_update = {
+            :name => params["item-name"],
+            :barcode => params["item-barcode"],
+            :quantity => params["item-quantity"].to_i,
+            :description => params["item-description"],
+            :category => params["item-category"],
+            :stock_quantity => params["item-quantity"].to_i,
+            :specs => params["item-specs"] == ""? nil : params["item-specs"]
+        }
 
-          if item.update(item_update)
-            unless params[:"item-picture"].nil?
-              if File.exists?("./public/product_images/product_#{params["item_id"]}.jpg")
-                File.delete("./public/product_images/product_#{params["item_id"]}.jpg")
-              end
-
-              File.open("./public/product_images/product_#{params["item_id"]}.jpg", "w") do |file|
-                file.write(params[:"item-picture"][:tempfile].read)
-              end
+        if item.update(item_update)
+          unless params[:"item-picture"].nil?
+            path = "public/product_images/product_#{params["item_id"]}.#{params[:"item-picture"][:filename].split('.')[-1]}"
+            Dir.foreach("public/product_images").each do |file|
+              File.delete(File.join("public/product_images", file)) if file.include?(params["item_id"].to_s)
             end
 
-            redirect "/inventory/#{params["item_id"]}"
+            if params[:"item-picture"][:type].include?("image")
+              File.open(path, "w") do |file|
+                file.write(params[:"item-picture"][:tempfile].read)
+              end
+            else
+              return ErrorHandler.e_500(self, "You didn't upload a image file. Try again!")
+            end
           end
+
+          redirect "/inventory/#{params["item_id"]}"
+        else
+          ErrorHandler.e_500(self, "Something wrong happened when updating item!")
         end
       end
     end
@@ -536,13 +537,13 @@ class App < Sinatra::Base
           item = Inventory.first(:id => params["item_id"])
 
           if item.delete
-            if File.exists?("./public/product_images/product_#{params["item_id"]}.jpg")
-              File.delete("./public/product_images/product_#{params["item_id"]}.jpg")
+            Dir.foreach("public/product_images").each do |file|
+              File.delete(File.join("public/product_images", file)) if file.include?(params["item_id"].to_s)
             end
 
             redirect '/inventory'
           else
-            ErrorHandler.e_500(self, nil)
+            return ErrorHandler.e_500(self, nil)
           end
         end
       end
@@ -577,7 +578,7 @@ class App < Sinatra::Base
         else
           item = Inventory.first(:barcode => params[:item_id][2..-1])
           if item.nil?
-            ErrorHandler.e_404(self, "Kunde inte hitta någon artikel med sträckkoden: #{params[:item_id][2..-1]}")
+            ErrorHandler.e_404(self, "Kunde inte hitta någon artikel med streckkoden: #{params[:item_id][2..-1]}")
           else
             redirect("/inventory/#{item.id}")
           end
@@ -599,11 +600,12 @@ class App < Sinatra::Base
               :item_id => item.id,
               :item_name => item.name,
               :item_quantity => q,
+              :item_barcode => item.barcode,
               :item_description => item.description.nil? || item.description == '' ? 'Beskrivning kommer inom kort.' : item.description,
               :item_category => item.category.nil? ? 0 : item.category,
               :item_category_name => item.category.nil? ? "Alla" : Categories.first(:id => item.category).name,
               :inventory_item_names => inventory_item_names,
-              :item_specs => item.specs.nil? ? nil : JSON.parse(item.specs)
+              :item_specs => item.specs.nil? || item.specs.empty? ? nil : JSON.parse(item.specs)
           }
         else
           ErrorHandler.e_404(self, "Kunde inte hitta någon artikel med id: #{params[:item_id]}")

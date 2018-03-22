@@ -1,16 +1,20 @@
 module DatabaseHandler
 
+  # Initializing the DatabaseHandler.
+  #
+  # @param db_path [String] the path to the database file.
+  # @return [nil].
   def self.init(db_path:)
     $db_path = db_path
     $database = SQLite3::Database.new(db_path)
   end
 
-  def initialize_table
-
-  end
-
   class Table
 
+    # Associates attributes for a table in the database to this class.
+    #
+    # @param args [array] An array of properties the attribute should have.
+    # @return [nil].
     def self.attribute(*args)
       @attributes ||= []
 
@@ -40,26 +44,48 @@ module DatabaseHandler
       @attributes << attribute
     end
 
+    # Sets the table name for this class.
+    #
+    # @param name [String] The name of the table.
+    # @return [String] Returns the table name.
     def self.table_name(name)
       @table_name = name
     end
 
+    # Gets all the attributes associated to this table.
+    #
+    # @return [Array] Returns all the attributes associated to this table.
     def self.get_attributes
       @attributes
     end
 
+    # Gets the path to the database on disk.
+    #
+    # @return [String] Returns the path.
     def self.get_database_path
       $db_path
     end
 
+    # Gets the name of the table.
+    #
+    # @return [String] Returns the name of table.
     def self.get_table_name
       @table_name
     end
 
-    def self.execute(str)
-      $database.execute(str)
+    # Takes in a string of sqlite code and executes it in the specified database.
+    #
+    # @param exe_str [String] Sqlite code.
+    # @return [Array] Returns an array of database attributes.
+    def self.execute(exe_str)
+      $database.execute(exe_str)
     end
 
+    # Takes in a name and an array of attributes for the table and creates it.
+    #
+    # @param name [String] Name of new table.
+    # @param attributes [Array] Array of attributes for the new table.
+    # @return [Boolean] Returns true or false depending if it succeeds or not.
     def self.create_table(name,attributes)
       begin
         query = ""
@@ -93,6 +119,10 @@ module DatabaseHandler
       end
     end
 
+    # Initializes table with the specified attributes. It creates the table or alter it depending on the name and
+    # attributes.
+    #
+    # @return [Boolean] Returns true or false depending if it succeeds or not..
     def self.init_table
       begin
         table_exists = $database.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='#{@table_name}'")
@@ -164,11 +194,24 @@ module DatabaseHandler
       end
     end
 
+    # Adds relations between two tables to make join requests.
+    #
+    # @param method [Symbol] Name of the method.
+    # @param klass [Class] Class to the other table in the relationship.
+    # @param key_1 [Symbol] Unique key for the first table in the relationship.
+    # @param key_2 [symbol] Unique key for the second table in the relationship.
+    # @return [Nil]
     def self.belongs_to(method, klass, key_1, key_2)
       @relations ||= []
       @relations << {:method => method, :class => klass, :key_1 => key_1, :key_2 => key_2}
     end
 
+    # Gets all the elements from database with matching conditions. If relation specified, also returns the elements of
+    # the relating table.
+    #
+    # @param condition [Array] An array of symbols, declaring the conditions.
+    # @param block [Block] A block to specify if it shall include a relations elements.
+    # @return [Array] Returns an array of DatabaseObjects representing the elements from the table.
     def self.all(*condition, &block)
       begin
         if block_given? && block != nil
@@ -230,6 +273,12 @@ module DatabaseHandler
       end
     end
 
+    # Gets the first element from database with matching conditions. If relation specified, also returns the elements of
+    # the relating table.
+    #
+    # @param condition [Array] An array of symbols, declaring the conditions.
+    # @param block [Block] A block to specify if it shall include a relations elements.
+    # @return [DatabaseObject] Returns an DatabaseObject representing the element from the table.
     def self.first(*condition, &block)
       begin
         if block_given? && block != nil
@@ -279,6 +328,10 @@ module DatabaseHandler
       end
     end
 
+    # Creates a new element in table with the values specified.
+    #
+    # @param element [Hash] An Hash containing all the values for the element.
+    # @return [Boolean] Returns true or false if action succeeds or not.
     def self.create(element)
       begin
         columns = ""
@@ -301,6 +354,10 @@ module DatabaseHandler
       end
     end
 
+    # Counts all the element in table with the specified condition.
+    #
+    # @param condition [Array] An array of symbols, declaring the conditions.
+    # @return [Integer] Returns the number of elements found with the conditions.
     def self.count(*condition)
       begin
         con_query = generate_condition_query(condition, nil)
@@ -311,6 +368,10 @@ module DatabaseHandler
       end
     end
 
+    # Gets the max value of a element in table found with the specified condition.
+    #
+    # @param condition [Array] An array of symbols, declaring the conditions.
+    # @return [Integer] Returns the value of elements found with the conditions.
     def self.max(attribute, *condition)
       begin
         con_query = generate_condition_query(condition, nil)
@@ -321,6 +382,10 @@ module DatabaseHandler
       end
     end
 
+    # Gets the minimum value of a element in table found with the specified condition.
+    #
+    # @param condition [Array] An array of symbols, declaring the conditions.
+    # @return [Integer] Returns the value of elements found with the conditions.
     def self.min(attribute, *condition)
       begin
         con_query = generate_condition_query(condition, nil)
@@ -331,6 +396,11 @@ module DatabaseHandler
       end
     end
 
+    # Generates a string formatted for sqlite from the conditions given.
+    #
+    # @param condition [condtition] An array of symbols, declaring the conditions.
+    # @param t_name [String] the table name to use with relations.
+    # @return [String] Returns the string with the formatted conditions.
     def self.generate_condition_query(condition, t_name)
       con = ""
       order_of = ""
@@ -380,6 +450,10 @@ module DatabaseHandler
       [con, order_of]
     end
 
+    # Gets all the condition values to use in execute.
+    #
+    # @param condition [condtition] An array of symbols, declaring the conditions.
+    # @return [Array] Returns an array with all the values.
     def self.get_values_from_condition(condition)
       values = []
       unless condition.nil? || condition.empty?
@@ -402,21 +476,31 @@ module DatabaseHandler
   end
 
   class DatabaseObject
-    def initialize(table_name, values)
+
+    # Initializes and creates the DatabaseObject. Also creates the instance variables with element values.
+    #
+    # @param table_name [String] An array of symbols, declaring the conditions.
+    # @param element_values [Array] An array of an elements values and names.
+    # @return [Nil]
+    def initialize(table_name, element_values)
       @table_name = table_name
-      values.each do |key, value|
+      element_values.each do |key, value|
         self.instance_variable_set("@#{key}".to_sym, value)
         self.class.send(:attr_accessor, key)
       end
     end
 
-    def update(elements)
+    # Updates a value or values for the DatabaseObject in the table.
+    #
+    # @param element [Hash] An array of values and names too be updated.
+    # @return [Boolean] Returns true or false if action succeeds or not.
+    def update(element)
       sql_str = "UPDATE #{@table_name} SET "
       values = []
-      elements.each_with_index do |key, index|
+      element.each_with_index do |key, index|
         values << key[1]
         sql_str += "#{key[0]} = ?"
-        if index < elements.length - 1
+        if index < element.length - 1
           sql_str += ", "
         end
       end
@@ -431,6 +515,9 @@ module DatabaseHandler
       end
     end
 
+    # Deletes this element from the database.
+    #
+    # @return [Boolean] Returns true or false if action succeeds or not.
     def delete
       begin
         $database.execute("DELETE FROM #{@table_name} WHERE id = ?", @id)

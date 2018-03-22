@@ -69,30 +69,26 @@ function initializeCountdown(endtime) {
     var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
     var minutes = Math.floor((t / 1000 / 60) % 60);
     var seconds = Math.floor((t / 1000) % 60);
-    if (t <= 0) {
-        clock.innerHTML = "Mötet har startat!"
-    } else {
-        clock.innerHTML = days + ' dag(ar), ' +
-            hours + ' timmar, ' +
-            minutes + ' minuter och ' +
-            seconds + " sekunder.";
-        var timeinterval = setInterval(function () {
-            var t = Date.parse(endtime + ':00:00 GMT+0100') - Date.parse(new Date().toString());
-            var days = Math.floor(t / (1000 * 60 * 60 * 24));
-            var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
-            var minutes = Math.floor((t / 1000 / 60) % 60);
-            var seconds = Math.floor((t / 1000) % 60);
-            if (t <= 0) {
-                clearInterval(timeinterval);
-                clock.innerHTML = "Mötet har startat!"
-            } else {
-                clock.innerHTML = days + ' dag(ar), ' +
-                    hours + ' timmar, ' +
-                    minutes + ' minuter och ' +
-                    seconds + " sekunder.";
-            }
-        }, 1000);
-    }
+    clock.innerHTML = days + ' dag(ar), ' +
+        hours + ' timmar, ' +
+        minutes + ' minuter och ' +
+        seconds + " sekunder.";
+    var timeinterval = setInterval(function () {
+        var t = Date.parse(endtime + ':00:00 GMT+0100') - Date.parse(new Date().toString());
+        var days = Math.floor(t / (1000 * 60 * 60 * 24));
+        var hours = Math.floor((t / (1000 * 60 * 60)) % 24);
+        var minutes = Math.floor((t / 1000 / 60) % 60);
+        var seconds = Math.floor((t / 1000) % 60);
+        if (t <= 0) {
+            clearInterval(timeinterval);
+            clock.innerHTML = "Mötet har startat!"
+        } else {
+            clock.innerHTML = days + ' dag(ar), ' +
+                hours + ' timmar, ' +
+                minutes + ' minuter och ' +
+                seconds + " sekunder.";
+        }
+    }, 1000);
 }
 
 function newServerAjaxCall(url, data, onSuccess) {

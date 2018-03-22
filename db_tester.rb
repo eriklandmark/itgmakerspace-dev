@@ -12,6 +12,7 @@ require_relative 'DatabaseHandler'
 
 DatabaseHandler.init(db_path: "database/database.sqlite")
 require_relative 'database/models'
+require_relative 'lib'
 
 class Inventory_Item
   include DataMapper::Resource
@@ -29,6 +30,8 @@ end
 #pp Loans.execute("SELECT * FROM users INNER JOIN loans ON users.id = loans.user_id")
 
 #p Categories.min(:id, :name => {:like => "tt"})
-p Loans.count(:name => {:like => "tt"})
+#p Loans.count(:name => {:like => "tt"})
+
+p get_inv_img_ext
 
 

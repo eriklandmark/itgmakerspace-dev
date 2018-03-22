@@ -1,10 +1,12 @@
 - content_for :title do
   = item_name
 
-== erb :"parts/inventory_search_field", :locals => {:inventory_item_names => inventory_item_names}
+-
+
+== slim :"parts/inventory_search_field", :locals => {:inventory_item_names => inventory_item_names}
 article#item_main.main
   #category_box
-    == erb :"parts/category_list", :locals => {:categories => get_categories, :category_list_id => 1}
+    == slim :"parts/category_list", :locals => {:categories => Categories.get_categories, :category_list_id => 1}
   #item_box
     - if !session[:permission_level].nil? && session[:permission_level] >= 2
       section
@@ -26,9 +28,11 @@ article#item_main.main
         h1 = item_name
         h3 Antal i lager: #{item_quantity}
       #item_specs
+        - unless item_barcode.nil? || item_barcode.empty?
+          p#barcode Streckkod: #{item_barcode}
         #item_image
-          img alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.jpg" /
-        - unless item_specs.nil?
+          img alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.#{get_inv_img_ext_from_id(item_id)}" /
+        - unless item_specs.nil? || item_specs.empty?
           .item_divider
           - item_specs.keys.each do |title|
             h4 = title.to_s

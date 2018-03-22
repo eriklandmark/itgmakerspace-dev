@@ -2,9 +2,9 @@
   | Lager
 
 article#inventory_main.main
-  == erb :"parts/inventory_search_field"
+  == slim :"parts/inventory_search_field"
   #category_box
-    == erb :"parts/category_list"
+    == slim :"parts/category_list"
   #inventory
     section
       - if category_name == "Alla"
@@ -49,15 +49,16 @@ article#inventory_main.main
     .item_divider
     #inventory_items
       - if inventory != nil && inventory.length > 0
+        - extensions = get_inv_img_ext
         - inventory.each do |item|
           .item
             .item_picture
               a href="/inventory/#{item[:id]}"
-                img alt="TBA" src="product_images/product_#{item[:id]}.jpg"
+                img alt="TBA" src="product_images/product_#{item[:id]}.#{extensions['product_' + item[:id].to_s]}"
             .item_info
               p.item_quantity I lager: #{item[:quantity]} st.
               a href="/inventory/#{item[:id]}" = item[:name]
-              p.item_description= item[:description][0..100]
+              p.item_description = item[:description].length > 100 ? item[:description][0..97].chomp.strip +  "..." : item[:description][0..97]
           .item_divider
       - else
         - if search_term != nil && search_term != ''

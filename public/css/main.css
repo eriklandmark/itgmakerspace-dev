@@ -746,6 +746,8 @@ nav {
         background-color: rgba(0, 0, 0, 0.2); }
       #item_main #item_box #item_specs h4 {
         margin: 10px 0 5px 0; }
+      #item_main #item_box #item_specs h3, #item_main #item_box #item_specs #barcode {
+        margin: 4px 0 6px 0; }
       #item_main #item_box #item_specs table {
         padding: 5px;
         background-color: lightgray;

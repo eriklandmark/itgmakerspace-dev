@@ -1,4 +1,10 @@
 class ErrorHandler
+
+  # Displays the error 403 page for the user. (Service Denied)
+  #
+  # @param app [Instance] The instance for the app.rb.
+  # @param msg [String] Message to display for user. Set to nil if it shall use the default message.
+  # @return [String] Returns the error 403 page with supplied message.
   def self.e_403(app, msg)
     app.status(403)
     error_msg("(403) -- #{app.request.ip} Resource denied: #{app.request.path_info}")
@@ -9,6 +15,11 @@ class ErrorHandler
     end
   end
 
+  # Displays the error 404 page for the user. (Resource not found)
+  #
+  # @param app [Instance] The instance for the app.rb.
+  # @param msg [String] Message to display for user. Set to nil if it shall use the default message.
+  # @return [String] Returns the error 404 page with supplied message.
   def self.e_404(app, msg)
     #app.status 404
     error_msg("(404) -- #{app.request.ip} Unknown resource: #{app.request.path_info}")
@@ -19,6 +30,11 @@ class ErrorHandler
     end
   end
 
+  # Displays the error 500 page for the user. (Internal server error)
+  #
+  # @param app [Instance] The instance for the app.rb.
+  # @param msg [String] Message to display for user. Set to nil if it shall use the default message.
+  # @return [String] Returns the error 500 page with supplied message.
   def self.e_500(app, msg)
     app.status 500
     error_msg("(500) -- #{app.request.ip} Internal server error: #{app.request.path_info}")
@@ -29,12 +45,10 @@ class ErrorHandler
     end
   end
 
-  def self.custom_error(request, code, msg)
-    status code
-    error_msg("-- #{request.ip}  #{request.path_info} (#{code}) men det uppstod ett fel på serversidan.! ")
-    slim :error_page, :locals => {:error_code => '500', :error_msg => msg.to_s}
-  end
-
+  # Writes out a error message in the terminal.
+  #
+  # @param msg [String] The message to be written.
+  # @return [Nil]
   def self.error_msg(msg)
     puts '[Error] ' + msg.to_s
   end

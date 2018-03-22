@@ -1,0 +1,7 @@
+#category_wrapper
+  #categories_list
+    h3 Kategorier:
+    #categories
+      a href="/inventory?category=0"  Alla
+      - Categories.get_categories.each do |category|
+        a href="/inventory?category=#{category[:category_id]}" = category[:category_name]

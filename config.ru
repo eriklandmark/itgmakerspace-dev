@@ -20,7 +20,7 @@ configure :development do
 
   DatabaseHandler.init(db_path: "database/database.sqlite")
   require_relative 'database/models'
-  update_inventory_items
+  Inventory.update_inventory_items
 
   run App
 end
@@ -40,7 +40,7 @@ configure :production do
 
   DatabaseHandler.init(db_path: "database/database.sqlite")
   require_relative 'database/models'
-  update_inventory_items
+  Inventory.update_inventory_items
 
   fork do
     Rack::Server.start({

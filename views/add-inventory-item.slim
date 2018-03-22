@@ -30,7 +30,7 @@
               td
                 select name="item-category" required="required"
                   option value="0" ...Välj Kategori...
-                  - get_categories.each do |category|
+                  - Categories.get_categories.each do |category|
                     - if category[:category_id] == item_category
                       option value="#{category[:category_id]}" selected="selected" = category[:category_name]
                     - else
@@ -48,7 +48,7 @@
         #item_page_preview
           #item_specs_div
             #item_image
-              img#item_spec_image alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.jpg" /
+              img#item_spec_image src="#" alt="Lägg till artikelbild.."
             .item_divider
             #item_specs
           p#item-description-preview
