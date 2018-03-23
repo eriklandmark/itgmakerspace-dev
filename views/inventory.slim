@@ -56,7 +56,7 @@ article#inventory_main.main
               a href="/inventory/#{item[:id]}"
                 img alt="TBA" src="product_images/product_#{item[:id]}.#{extensions['product_' + item[:id].to_s]}"
             .item_info
-              p.item_quantity I lager: #{item[:quantity]} st.
+              p.item_quantity I lager: #{item[:quantity]} / #{item[:stock_quantity]}
               a href="/inventory/#{item[:id]}" = item[:name]
               p.item_description = item[:description].length > 100 ? item[:description][0..97].chomp.strip +  "..." : item[:description][0..97]
           .item_divider

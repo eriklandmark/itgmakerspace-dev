@@ -26,7 +26,7 @@ article#item_main.main
     div#item_info
       #item_header
         h1 = item_name
-        h3 Antal i lager: #{item_quantity}
+        h3 Antal i lager: #{item_quantity} / #{item_stock_quantity}
       #item_specs
         - unless item_barcode.nil? || item_barcode.empty?
           p#barcode Streckkod: #{item_barcode}

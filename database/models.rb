@@ -107,6 +107,16 @@ class Inventory < DatabaseHandler::Table
     inventory_item_names
   end
 
+  def self.update_quantity_from_loans(item_id)
+    new_q = 0
+    Loan_Items.all(:item_id => item_id).each do |loan_item|
+      new_q += loan_item.quantity
+    end
+
+    item = Inventory.first(:id => item_id)
+    item.update({:quantity => item.stock_quantity - new_q})
+  end
+
   def self.update_inventory_items
     all_loans = Loans.all(:status => Loans::ACTIVE){{:include => "items"}}
     if all_loans.length >= 1

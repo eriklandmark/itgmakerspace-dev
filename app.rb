@@ -47,6 +47,14 @@ class App < Sinatra::Base
     redirect '/users/new'
   end
 
+  get '/loans' do
+    if session[:user_id].nil?
+      ErrorHandler.e_403(self, nil)
+    else
+      redirect "/users/#{session[:user_id]}/loans"
+    end
+  end
+
   get '/session/new' do
     if session[:user_id].nil?
       slim :login
@@ -189,14 +197,6 @@ class App < Sinatra::Base
     response.to_json
   end
 
-  get '/loans' do
-    if session[:user_id].nil?
-      ErrorHandler.e_403(self, nil)
-    else
-      redirect "/users/#{session[:user_id]}/loans"
-    end
-  end
-
   get '/users/:user_id/loans' do
     if !params["origin"].nil? && params["origin"] == "2"
       security_key = params['security_key']
@@ -304,9 +304,6 @@ class App < Sinatra::Base
     response = {:status => 'false'}
     origin = params['origin'].to_i
     user_id = params['user_id'].to_i
-    if params['user_id'] == nil
-      user_id = session[:user_id]
-    end
     item_id = params['item_id'].to_i
     loan_id = params['loan_id'].to_i
     quantity = params['quantity'].to_i
@@ -315,7 +312,7 @@ class App < Sinatra::Base
       proceed = false
       if origin == 2 && params['security_key'] != nil && user.security_key == params['security_key']
         proceed = true
-      elsif origin == 1 && user_id != nil
+      elsif origin == 1 && user_id == session[:user_id]
         proceed = true
       end
 
@@ -398,6 +395,7 @@ class App < Sinatra::Base
               :barcode => item.barcode,
               :description => item.description.nil? || item.description == '' ? 'Beskrivning kommer inom kort.' : item.description,
               :quantity => q,
+              :stock_quantity => item.stock_quantity,
               :category => item.category
           }
 
@@ -505,14 +503,13 @@ class App < Sinatra::Base
         item_update = {
             :name => params["item-name"],
             :barcode => params["item-barcode"],
-            :quantity => params["item-quantity"].to_i,
             :description => params["item-description"],
             :category => params["item-category"],
             :stock_quantity => params["item-quantity"].to_i,
             :specs => params["item-specs"] == ""? nil : params["item-specs"]
         }
 
-        if item.update(item_update)
+        if item.update(item_update) && Inventory.update_quantity_from_loans(params["item_id"])
           unless params[:"item-picture"].nil?
             path = "public/product_images/product_#{params["item_id"]}.#{params[:"item-picture"][:filename].split('.')[-1]}"
             Dir.foreach("public/product_images").each do |file|
@@ -574,6 +571,7 @@ class App < Sinatra::Base
                 :id => item.id,
                 :name => item.name,
                 :quantity => item.quantity,
+                :stock_quantity => item.stock_quantity,
                 :description => item.description,
                 :barcode => item.barcode,
                 :category => item.category
@@ -608,6 +606,7 @@ class App < Sinatra::Base
               :item_id => item.id,
               :item_name => item.name,
               :item_quantity => q,
+              :item_stock_quantity => item.stock_quantity,
               :item_barcode => item.barcode,
               :item_description => item.description.nil? || item.description == '' ? 'Beskrivning kommer inom kort.' : item.description,
               :item_category => item.category.nil? ? 0 : item.category,
