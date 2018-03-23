@@ -166,7 +166,7 @@ class App < Sinatra::Base
     end
 
     if user != nil
-      if BCrypt::Password.new(user.password) == params['user_password'] && user.update(:security_key => response[:security_key])
+      if BCrypt::Password.new(user.password) == params['user_password'] && user.update(:security_key => sec_key)
         response[:user_id] = user.id
         response[:security_key] = sec_key
         response[:name] = user.name
@@ -187,6 +187,14 @@ class App < Sinatra::Base
       response[:status] = "false"
     end
     response.to_json
+  end
+
+  get '/loans' do
+    if session[:user_id].nil?
+      ErrorHandler.e_403(self, nil)
+    else
+      redirect "/users/#{session[:user_id]}/loans"
+    end
   end
 
   get '/users/:user_id/loans' do
@@ -251,7 +259,7 @@ class App < Sinatra::Base
     end
 
     user = Users.first(:id => user_id)
-    if user == nil
+    if user.nil?
       response[:status] = "false"
       response[:status_msg] = "User doesn't exists!"
     end
