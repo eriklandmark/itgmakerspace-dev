@@ -109,7 +109,7 @@ class Inventory < DatabaseHandler::Table
 
   def self.update_quantity_from_loans(item_id)
     new_q = 0
-    Loan_Items.all(:item_id => item_id).each do |loan_item|
+    Loan_Items.all(:item_id => item_id, :status => Loan_Items::ACTIVE).each do |loan_item|
       new_q += loan_item.quantity
     end
 
