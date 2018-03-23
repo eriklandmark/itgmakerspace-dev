@@ -484,7 +484,7 @@ class App < Sinatra::Base
               :item_name => item.name,
               :item_barcode => item.barcode,
               :item_category => item.category,
-              :item_quantity => item.quantity,
+              :item_quantity => item.stock_quantity,
               :item_description => item.description,
               :item_specs => item.specs
           })
