@@ -421,7 +421,7 @@ class App < Sinatra::Base
     if has_auth_level?(2)
       return slim(:add_inventory_item, :locals => {
           :item_id => "-1",
-          :name => "",
+          :item_name => "",
           :item_barcode => "",
           :item_category => 0,
           :item_quantity => 1,
@@ -478,7 +478,7 @@ class App < Sinatra::Base
       else
         return slim(:update_inventory_item, :locals => {
             :item_id => params["item_id"],
-            :name => item.name,
+            :item_name => item.name,
             :item_barcode => item.barcode,
             :item_category => item.category,
             :item_quantity => item.stock_quantity,
@@ -526,9 +526,9 @@ class App < Sinatra::Base
           ErrorHandler.e_500(self, "Something wrong happened when updating item!")
         end
       end
+    else
+      ErrorHandler.e_403(self, nil)
     end
-
-    ErrorHandler.e_403(self, nil)
   end
 
   delete '/inventory/:item_id/delete' do
@@ -598,7 +598,7 @@ class App < Sinatra::Base
 
           slim :item_page, :locals => {
               :item_id => item.id,
-              :name => item.name,
+              :item_name => item.name,
               :item_quantity => q,
               :item_stock_quantity => item.stock_quantity,
               :item_barcode => item.barcode,
@@ -677,7 +677,7 @@ class App < Sinatra::Base
       }
 
       if Orders.first(:id => params["order_id"]).update(order)
-        redirect "/orders"
+        redirect "/orders/#{params["order_id"]}"
       else
         ErrorHandler.e_500(self, "Something wrong happened when updating item!")
       end

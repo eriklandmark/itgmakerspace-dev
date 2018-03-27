@@ -775,6 +775,8 @@ label {
       width: 100%; }
     #item_main section #item_category {
       margin: 0; }
+    #item_main section input[type=submit] {
+      margin-right: 20px; }
   #item_main #item_box {
     padding-top: 20px;
     display: flex;

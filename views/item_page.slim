@@ -1,7 +1,5 @@
 - content_for :title do
-  = item_name
-
--
+  | #{item_name}
 
 == slim :"parts/inventory_search_field", :locals => {:inventory_item_names => inventory_item_names}
 article#item_main.main
