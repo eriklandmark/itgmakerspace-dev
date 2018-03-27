@@ -32,7 +32,7 @@ article#item_main.main
           p#barcode Streckkod: #{item_barcode}
         #item_image
           img alt="Bild läggs till inom kort." src="/product_images/product_#{item_id}.#{get_inv_img_ext_from_id(item_id)}" /
-        - unless item_specs.nil? || item_specs.empty?
+        - unless item_specs.nil? || item_specs.empty? || !valid_json?(item_barcode)
           .item_divider
           - item_specs.keys.each do |title|
             h4 = title.to_s

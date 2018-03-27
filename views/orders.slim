@@ -1,0 +1,37 @@
+- content_for :title do
+  | Inköpslitor
+
+article#orders.main
+  #main
+    #info
+      #actions
+        h1 Inköpslistor
+        - if has_auth_level?(2)
+          a.a_button href="/orders/new" Ny Inköpslista
+      p Här kan du önska saker som ska köpas in till makerspace. Vi skapar nya inköpslitor när det är dags för ett nytt inköp av varor.
+      p Om du vill lägga till något är det viktigt att du gör det i tid, antingen under eller innan sista datumetför att dagen efter går betsällningen iväg.
+    #orders_box
+      table
+        tr
+          td
+            h4 Namn:
+          td
+            h4 Beskriving:
+          td.align_center
+            h4.inline Antal saker:
+          td.align_center
+            h4.inline Total pris:
+          td.align_center
+            h4.inline Sista datum:
+        - Orders.all(:status => Orders::ACTIVE).each do |order|
+          tr
+            td
+              a href="/orders/#{order.id}" = order.name
+            td
+              p = order.description
+            td
+              p.align_center #{Order_Items.count(:order_id => order.id, :status => Order_Items::ACTIVE)} st
+            td
+              p.align_center #{Orders.get_total_price(order.id)} kr
+            td
+              p.align_center = order.date_due_by

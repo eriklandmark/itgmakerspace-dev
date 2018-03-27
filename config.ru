@@ -10,8 +10,9 @@ require "uri"
 
 require_relative 'ErrorHandler'
 require_relative 'DatabaseHandler'
-require_relative 'app'
 require_relative 'lib'
+require_relative 'helpers'
+require_relative 'app'
 
 register Sinatra::DefaultCharset
 

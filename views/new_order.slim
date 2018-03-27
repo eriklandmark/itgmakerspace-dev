@@ -1,0 +1,22 @@
+- content_for :title do
+  | Inköpslistor - Ny
+
+article#order-new-edit.main
+  #main
+    form#new_order_form action="/orders/new" method="post"
+      #actions
+        h2 Lägg till ny inköpslista:
+        input type="submit" value="Spara"
+      table
+        tr
+          td
+            h3 Namn: *
+          td
+            h3 Sista datum: *
+        tr
+          td
+            input type="text" name="order-name" required="required" id="order-name"
+          td
+            input type="date" name="date-due-by" required="required"
+      h3 Beskrivning:
+      textarea#item-description name="order-description" form="new_order_form"

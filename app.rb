@@ -20,6 +20,8 @@ class App < Sinatra::Base
     ErrorHandler.e_500(self, nil)
   end
 
+  helpers User_Authentication
+
   get '/' do
     dates = nil
       File.open('meeting_dates.json', 'r') do |file|
@@ -48,24 +50,24 @@ class App < Sinatra::Base
   end
 
   get '/loans' do
-    if session[:user_id].nil?
-      ErrorHandler.e_403(self, nil)
-    else
+    if logged_in?
       redirect "/users/#{session[:user_id]}/loans"
+    else
+      ErrorHandler.e_403(self, nil)
     end
   end
 
   get '/session/new' do
-    if session[:user_id].nil?
-      slim :login
-    else
+    if logged_in?
       redirect "/users/#{session[:user_id]}"
+    else
+      slim :login
     end
   end
 
   post '/session' do
     user = Users.first(:email => params['user_email'].downcase)
-    if session[:user_id].nil?
+    if !logged_in?
       if user != nil
         if BCrypt::Password.new(user.password) == params['user_password']
           session[:user_full_name] = user.name
@@ -84,7 +86,7 @@ class App < Sinatra::Base
   end
 
   get '/users/new' do
-    if session[:user_id].nil?
+    if !logged_in?
       slim :register
     else
       ErrorHandler.e_403(self, "Tyvärr! Du får inte tillgång till denna sida när du är inloggad.<br>Logga ut först för att få tillgång till denna sida.")
@@ -100,7 +102,7 @@ class App < Sinatra::Base
       success = JSON.parse(response.body)["success"]
     end
 
-    if success && session[:user_id].nil?
+    if success && !logged_in?
       u = Users.first(:email => params['email'].downcase)
       if u == nil && params['password1'] == params['password2']
         new_user = {
@@ -131,7 +133,7 @@ class App < Sinatra::Base
   end
 
   get '/users/:user_id/edit' do
-    if params[:user_id].to_i == session[:user_id] || (!session[:permission_level].nil? && session[:permission_level] >= 2)
+    if params[:user_id].to_i == session[:user_id] || has_auth_level?(2)
       user = Users.first(:id => session[:user_id])
       if user != nil
         slim :change_password, :locals => {:user_id => params["user_id"]}
@@ -144,7 +146,7 @@ class App < Sinatra::Base
   end
 
   patch '/users/:user_id/edit' do
-    if params[:user_id].to_i == session[:user_id] || (!session[:permission_level].nil? && session[:permission_level] >= 2)
+    if params[:user_id].to_i == session[:user_id] || has_auth_level?(2)
       user = Users.first(:id => session[:user_id])
       if user != nil
         if BCrypt::Password.new(user.password) == params['user_password'] && params[:new_password_1] == params[:new_password_2]
@@ -208,7 +210,7 @@ class App < Sinatra::Base
         Loans.all(:user_id => user_id, :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}.each do |loan|
           loan.items.each do |item|
             if item.status == Loans::ACTIVE
-              items << {:quantity => item.quantity, :item_id => item.item_id, :loan_id => loan.id, :date_loaned => loan.date_loaned, :item_name => Inventory.first(:id => item.item_id).name}
+              items << {:quantity => item.quantity, :item_id => item.item_id, :loan_id => loan.id, :date_loaned => loan.date_loaned, :name => Inventory.first(:id => item.item_id).name}
             end
           end
         end
@@ -217,7 +219,7 @@ class App < Sinatra::Base
       end
 
       response.to_json
-    elsif params["user_id"].to_i == session[:user_id] || (!session[:permission_level].nil? && session[:permission_level] >= 2)
+    elsif params["user_id"].to_i == session[:user_id] || has_auth_level?(2)
       loans_items = []
       user_id = session[:user_id]
       user_loans = Loans.all(:user_id => user_id, :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}
@@ -416,16 +418,72 @@ class App < Sinatra::Base
   end
 
   get '/inventory/new' do
-    unless session[:user_id].nil? && session[:permission_level].nil?
-      if session[:permission_level] >= 2
-        return slim(:"add-inventory-item", :locals => {
-            :item_id => "-1",
-            :item_name => "",
-            :item_barcode => "",
-            :item_category => 0,
-            :item_quantity => 1,
-            :item_description => "",
-            :item_specs => ""
+    if has_auth_level?(2)
+      return slim(:add_inventory_item, :locals => {
+          :item_id => "-1",
+          :name => "",
+          :item_barcode => "",
+          :item_category => 0,
+          :item_quantity => 1,
+          :item_description => "",
+          :item_specs => ""
+      })
+    end
+
+    ErrorHandler.e_403(self, nil)
+  end
+
+  post '/inventory/new' do
+    if has_auth_level?(2)
+      id = Inventory.max(:id).to_i + 1
+
+      if Inventory.create({
+                              :id => id,
+                              :name => params["item-name"],
+                              :barcode => params["item-barcode"],
+                              :quantity => params["item-quantity"].to_i,
+                              :description => params["item-description"],
+                              :category => params["item-category"],
+                              :stock_quantity => params["item-quantity"].to_i,
+                              :specs => params["item-specs"] == ""? nil : params["item-specs"]
+                          })
+        unless params[:"item-picture"].nil?
+          path = "public/product_images/product_#{id}.#{params[:"item-picture"][:filename].split('.')[-1]}"
+          Dir.foreach("public/product_images").each do |file|
+            File.delete(File.join("public/product_images", file)) if file.include?(id.to_s)
+          end
+
+          if params[:"item-picture"][:type].include?("image")
+            File.open(path, "w") do |file|
+              file.write(params[:"item-picture"][:tempfile].read)
+            end
+          else
+            return ErrorHandler.e_500(self, "You didn't upload a image file. Try again!")
+          end
+        end
+
+        redirect '/inventory'
+      else
+        ErrorHandler.e_500(self, nil)
+      end
+    end
+  end
+
+  get '/inventory/:item_id/edit' do
+    if has_auth_level?(2)
+      item = Inventory.first(:id => params["item_id"])
+
+      if item.nil?
+        return status 404
+      else
+        return slim(:update_inventory_item, :locals => {
+            :item_id => params["item_id"],
+            :name => item.name,
+            :item_barcode => item.barcode,
+            :item_category => item.category,
+            :item_quantity => item.stock_quantity,
+            :item_description => item.description,
+            :item_specs => item.specs
         })
       end
     end
@@ -433,70 +491,8 @@ class App < Sinatra::Base
     ErrorHandler.e_403(self, nil)
   end
 
-  post '/inventory/new' do
-    unless session[:user_id].nil? && session[:permission_level].nil?
-      if session[:permission_level] >= 2
-        id = Inventory.max(:id).to_i + 1
-
-        if Inventory.create({
-                                :id => id,
-                                :name => params["item-name"],
-                                :barcode => params["item-barcode"],
-                                :quantity => params["item-quantity"].to_i,
-                                :description => params["item-description"],
-                                :category => params["item-category"],
-                                :stock_quantity => params["item-quantity"].to_i,
-                                :specs => params["item-specs"] == ""? nil : params["item-specs"]
-                            })
-          unless params[:"item-picture"].nil?
-            path = "public/product_images/product_#{id}.#{params[:"item-picture"][:filename].split('.')[-1]}"
-            Dir.foreach("public/product_images").each do |file|
-              File.delete(File.join("public/product_images", file)) if file.include?(id.to_s)
-            end
-
-            if params[:"item-picture"][:type].include?("image")
-              File.open(path, "w") do |file|
-                file.write(params[:"item-picture"][:tempfile].read)
-              end
-            else
-              return ErrorHandler.e_500(self, "You didn't upload a image file. Try again!")
-            end
-          end
-
-          redirect '/inventory'
-        else
-          ErrorHandler.e_500(self, nil)
-        end
-      end
-    end
-  end
-
-  get '/inventory/:item_id/edit' do
-    if !session[:user_id].nil? && !session[:permission_level].nil?
-      if session[:permission_level] >= 2
-        item = Inventory.first(:id => params["item_id"])
-
-        if item.nil?
-          return status 404
-        else
-          return slim(:"update-inventory-item", :locals => {
-              :item_id => params["item_id"],
-              :item_name => item.name,
-              :item_barcode => item.barcode,
-              :item_category => item.category,
-              :item_quantity => item.stock_quantity,
-              :item_description => item.description,
-              :item_specs => item.specs
-          })
-        end
-      end
-    end
-
-    ErrorHandler.e_403(self, nil)
-  end
-
   patch '/inventory/:item_id/edit' do
-    unless session[:user_id].nil? && session[:permission_level].nil? && session[:permission_level] >= 2
+    if has_auth_level?(2)
       item = Inventory.first(:id => params["item_id"])
 
       unless item.nil?
@@ -536,20 +532,18 @@ class App < Sinatra::Base
   end
 
   delete '/inventory/:item_id/delete' do
-    unless session[:user_id].nil? && session[:permission_level].nil?
-      if session[:permission_level] >= 2
-        unless params["item_id"].nil?
-          item = Inventory.first(:id => params["item_id"])
+    if has_auth_level?(2)
+      unless params["item_id"].nil?
+        item = Inventory.first(:id => params["item_id"])
 
-          if item.delete
-            Dir.foreach("public/product_images").each do |file|
-              File.delete(File.join("public/product_images", file)) if file.include?(params["item_id"].to_s)
-            end
-
-            redirect '/inventory'
-          else
-            return ErrorHandler.e_500(self, nil)
+        if item.delete
+          Dir.foreach("public/product_images").each do |file|
+            File.delete(File.join("public/product_images", file)) if file.include?(params["item_id"].to_s)
           end
+
+          redirect '/inventory'
+        else
+          return ErrorHandler.e_500(self, nil)
         end
       end
     end
@@ -604,7 +598,7 @@ class App < Sinatra::Base
 
           slim :item_page, :locals => {
               :item_id => item.id,
-              :item_name => item.name,
+              :name => item.name,
               :item_quantity => q,
               :item_stock_quantity => item.stock_quantity,
               :item_barcode => item.barcode,
@@ -625,5 +619,152 @@ class App < Sinatra::Base
 
   get '/wiki' do
     slim :wiki
+  end
+
+  get '/inkopslista' do
+    redirect '/orders'
+  end
+
+  get '/inkopslistor' do
+    redirect '/orders'
+  end
+
+  get '/orders' do
+    slim :orders
+  end
+
+  get '/orders/new' do
+    if has_auth_level?(2)
+      slim :new_order
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  post '/orders/new' do
+    if has_auth_level?(2)
+      order = {
+          :name => params["order-name"],
+          :description => params["order-description"],
+          :date_created => DateTime.now,
+          :date_due_by => params["date-due-by"]
+      }
+
+      if Orders.create(order)
+        redirect "/orders"
+      else
+        ErrorHandler.e_500(self, "Something wrong happened when updating item!")
+      end
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  get '/orders/:order_id/edit' do
+    if has_auth_level?(2)
+      slim :edit_order, :locals => {:order_id => params["order_id"]}
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  patch '/orders/:order_id/edit' do
+    if has_auth_level?(2)
+      order = {
+          :name => params["order-name"],
+          :description => params["order-description"],
+          :date_due_by => params["date-due-by"]
+      }
+
+      if Orders.first(:id => params["order_id"]).update(order)
+        redirect "/orders"
+      else
+        ErrorHandler.e_500(self, "Something wrong happened when updating item!")
+      end
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  delete '/orders/:order_id/delete' do
+    if has_auth_level?(2)
+      order = Orders.first(:id => params["order_id"]){{:include => "items"}}
+      if order.update({:status => Orders::INACTIVE}) && !order.items.nil?
+        order.items.each do |item|
+          unless item.update({:status => Orders::INACTIVE})
+            ErrorHandler.e_500(self, nil)
+          end
+        end
+      end
+
+      redirect '/orders'
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  get '/orders/:order_id/items/new' do
+    slim :new_order_item, :locals => {:order_id => params["order_id"]}
+  end
+
+  post '/orders/:order_id/items/new' do
+    item = {
+        :name => params["order-item-name"],
+        :quantity => params["order-item-quantity"],
+        :price => params["order-item-price"],
+        :url => params["order-item-url"],
+        :order_id => params["order_id"],
+        :user_id => session[:user_id]
+    }
+
+    if Order_Items.create(item)
+      redirect "/orders/#{params['order_id']}"
+    else
+      ErrorHandler.e_500(self, "Something wrong happened when adding item!")
+    end
+  end
+
+  get '/orders/:order_id/items/:item_id/edit' do
+    item = Order_Items.first(:id => params["item_id"], :order_id => params["order_id"], :status => Order_Items::ACTIVE)
+    if has_auth_level?(2) || item.user_id == session[:user_id]
+      slim :edit_order_item, :locals => {:order_id => params["order_id"], :item => item}
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  patch '/orders/:order_id/items/:item_id/edit' do
+    item = Order_Items.first(:id => params["item_id"], :order_id => params["order_id"])
+    if has_auth_level?(2) || item.user_id == session[:user_id]
+      if item.update({
+                         :name => params["order-item-name"],
+                         :quantity => params["order-item-quantity"],
+                         :price => params["order-item-price"],
+                         :url => params["order-item-url"]
+                     })
+        redirect "/orders/#{params['order_id']}"
+      else
+        ErrorHandler.e_500(self, "Something wrong happened when adding item!")
+      end
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  delete '/orders/:order_id/items/:item_id/delete' do
+    item = Order_Items.first(:id => params["item_id"], :order_id => params["order_id"])
+    if has_auth_level?(2) || item.user_id == session[:user_id]
+      if item.update({:status => Order_Items::INACTIVE})
+        redirect "/orders/#{params['order_id']}"
+      else
+        ErrorHandler.e_500(self, "Something wrong happened when adding item!")
+      end
+    else
+      ErrorHandler.e_403(self, nil)
+    end
+  end
+
+  get '/orders/:order_id' do
+    slim :order_page, :locals => {:order_id => params["order_id"]}
   end
 end

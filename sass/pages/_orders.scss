@@ -1,0 +1,43 @@
+#orders {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+
+  #main {
+    margin-top: 30px;
+    width: 80vw;
+    display: flex;
+    flex-direction: column;
+
+    #info {
+      display: flex;
+      flex-direction: column;
+      #actions {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+      }
+    }
+
+    #orders_box {
+
+      table {
+        width: 100%;
+        font-size: 1.2em;
+
+        h4 {
+          margin: 0px 5px;
+        }
+
+        .inline {
+          white-space: nowrap;
+        }
+
+        .align_center {
+          text-align: center;
+        }
+      }
+    }
+  }
+}

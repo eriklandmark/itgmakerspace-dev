@@ -27,11 +27,29 @@ body {
 @import "parts/navigation_bar";
 @import "parts/inventory_search_field";
 @import "parts/categories_list";
+@import "parts/footer";
 
-.main {
-  margin-top: $nav_bar_height;
+@media screen {
+  .main {
+    margin-top: $nav_bar_height;
+  }
+
+  .print {
+    display: none;
+  }
 }
 
+@media print {
+  .screen {
+    display: none
+  }
+
+  .print {
+    display: flex;
+  }
+}
+
+@import "parts/inputs";
 @import "pages/index";
 @import "pages/inventory";
 @import "pages/login";
@@ -40,8 +58,10 @@ body {
 @import "pages/item_page";
 @import "pages/change_password";
 @import "pages/error_page";
-@import "pages/3d-skrivare";
+@import "pages/wiki";
 @import "pages/under_construction";
-@import "pages/add-inventory-item";
-
-@import "parts/footer";
+@import "pages/add_inventory_item";
+@import "pages/new_order";
+@import "pages/orders";
+@import "pages/order_page";
+@import "pages/new_order_item";

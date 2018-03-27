@@ -1,0 +1,81 @@
+- order = Orders.first(:id => order_id){{:include => "items"}}
+- content_for :title do
+  | Inköpslitor - #{order.name}
+
+article#order_page.main
+  #main
+    .info.screen
+      #actions
+        #titles
+          h1 Inköpslista
+          h3.screen = order.name
+        #buttons
+          - if has_auth_level?(2)
+            form action="/orders/#{order_id}/delete" method="post"
+              input type="hidden" name="_method" value="delete"
+              input type="submit" value="Tabort lista"
+            a.a_button href="/orders/#{order_id}/edit" Redigera lista
+          - if logged_in?
+            a.a_button href="/orders/#{order_id}/items/new" Lägg till i lista
+          - else
+            input type="button" value="Lägg till i lista" disabled=""
+      p = order.description
+    .info.print
+      h2.print Inköpslista
+      table.print
+        tr
+          td
+            h4.order_info Namn:
+          td
+            p = order.name
+        tr
+          td
+            h4.order_info Beskrivining:
+          td
+            p = order.description
+    h3 Total kostnad för lista: #{Orders.get_total_price(order_id)} kr
+    #items
+      - if order.items.nil?
+        h3 Det finns inga saker i listan än.
+      - else
+        table
+          tr
+            td
+              h4 Namn:
+            td.align_center
+              h4 Antal:
+            td.align_center
+              h4 Styckpris:
+            td.align_center
+              h4 Totalpris:
+            td.align_center
+              h4 Länk:
+            td.align_center
+              h4 Tillagd av:
+          - order.items.each do |item|
+            -if item.status == Order_Items::ACTIVE
+              tr
+                td.name
+                  p = item.name
+                td.align_center.no_wrap
+                  p #{item.quantity} st
+                td.align_center.no_wrap
+                  p #{item.price} kr
+                td.align_center.no_wrap
+                  p #{(item.quantity.to_i*item.price.to_i)} kr
+                td.align_center.no_wrap
+                  a href="#{item.url}" target="_blank" Länk till saken
+                td.align_center.no_wrap
+                  p = Users.first(:id => item.user_id).name
+                td.align_center.screen
+                  form action="/orders/#{order_id}/items/#{item.id}/delete" method="post"
+                    input type="hidden" name="_method" value="delete"
+                    - if has_auth_level?(2) || item.user_id.to_i == session[:user_id]
+                      input type="submit" value="Tabort"
+                    - else
+                      input type="submit" value="Tabort" disabled=""
+                td.align_center.screen
+                  - if has_auth_level?(2) || item.user_id.to_i == session[:user_id]
+                    a.a_button href="/orders/#{order_id}/items/#{item.id}/edit" Redigera
+                  - else
+                    input type="submit" value="Redigera" disabled=""

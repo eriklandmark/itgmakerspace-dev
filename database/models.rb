@@ -46,6 +46,52 @@ class Loans < DatabaseHandler::Table
   init_table
 end
 
+class Order_Items < DatabaseHandler::Table
+  ACTIVE = 1
+  INACTIVE = 0
+
+  table_name "order_items"
+
+  attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
+  attribute "order_id", "Integer"
+  attribute "user_id", "Integer"
+  attribute "status", "Integer", :default => ACTIVE
+  attribute "quantity", "Integer"
+  attribute "name", "VARCHAR(150)"
+  attribute "price", "Real"
+  attribute "url", "VARCHAR(1000)"
+
+  init_table
+end
+
+class Orders < DatabaseHandler::Table
+  ACTIVE = 1
+  INACTIVE = 0
+
+  table_name "orders"
+  attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
+  attribute "status", "Integer", :default => ACTIVE
+  attribute "date_created", "VARCHAR(30)"
+  attribute "date_due_by", "VARCHAR(30)"
+  attribute "name", "VARCHAR(30)"
+  attribute "description", "VARCHAR(16384)"
+
+  belongs_to :items, Order_Items, :id, :order_id
+
+  def self.get_total_price(id)
+    total_price = 0.0
+    order = Orders.first(:id => id){{:include => "items"}}
+    unless order.items.nil?
+      order.items.each do |item|
+        total_price += item.price.to_f * item.quantity.to_f if item.status == Order_Items::ACTIVE
+      end
+    end
+    total_price
+  end
+
+  init_table
+end
+
 class Users < DatabaseHandler::Table
   table_name "users"
   attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
@@ -67,11 +113,11 @@ class Inventory < DatabaseHandler::Table
   attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
   attribute "name", "VARCHAR(50)"
   attribute "barcode", "VARCHAR(10)"
-  attribute "description", "VARCHAR(16655)"
+  attribute "description", "VARCHAR(16384)"
   attribute "quantity", "Integer"
   attribute "category", "Integer"
   attribute "stock_quantity", "Integer"
-  attribute "specs", "VARCHAR(16655)"
+  attribute "specs", "VARCHAR(16384)"
 
   init_table
 

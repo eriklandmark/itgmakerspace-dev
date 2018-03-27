@@ -1,0 +1,56 @@
+input[type=submit], input[type=button], input[type=reset] {
+  background-color: lightgray;
+  border: none;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.3em;
+  padding: 10px 20px;
+  color: black;
+  box-sizing : border-box;
+
+  &:disabled {
+    background-color: #f4f4f4;
+    color: lightgray;
+  }
+
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+input[type=text], select, input[type=number], input[type=file], input[type=email], input[type=password], input[type=date] {
+  border: 2px solid gray;
+  border-radius: 5px;
+  background-color: white;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1.2em;
+  padding: 5px;
+  width: 100%;
+  box-sizing : border-box;
+
+  &:focus {
+    border: 2px solid black;
+    outline: none;
+  }
+}
+
+textarea {
+  width: 100%;
+  height: 300px;
+  border: 2px solid gray;
+  background-color: white;
+  font-family: "Open Sans", sans-serif;
+  font-size: 1em;
+  padding: 5px;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+label {
+  font-size: 1em;
+  font-family: "Open Sans", sans-serif;
+}
+
+.a_button {
+  @extend input[type=button];
+  text-decoration: none;
+}

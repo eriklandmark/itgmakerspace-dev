@@ -290,7 +290,7 @@ module DatabaseHandler
           end
           if relation != nil
             con_query = generate_condition_query(condition, @table_name)
-            db_result = $database.execute("SELECT * FROM #{@table_name} INNER JOIN #{relation[:class].get_table_name} ON #{@table_name}.#{relation[:key_1]} = #{relation[:class].get_table_name}.#{relation[:key_2]}#{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition))
+            db_result = $database.execute("SELECT * FROM #{@table_name} LEFT JOIN #{relation[:class].get_table_name} ON #{@table_name}.#{relation[:key_1]} = #{relation[:class].get_table_name}.#{relation[:key_2]}#{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition))
             table_1_values = {}
             table_1 = db_result.first[0..@attributes.length - 1]
             @attributes.each_with_index do |attribute, index|
@@ -299,11 +299,20 @@ module DatabaseHandler
             db_result.each do |e|
               table_2_values = {}
               table_2 = e[@attributes.length..-1]
+              items_nil = true
               relation[:class].get_attributes.each_with_index do |attribute, index|
+                unless table_2[index].nil?
+                  items_nil = false
+                end
                 table_2_values[attribute[:name]] = table_2[index]
               end
+
               table_1_values[relation[:method].to_sym] ||= []
-              table_1_values[relation[:method].to_sym] << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
+              if items_nil
+                table_1_values[relation[:method].to_sym] = nil
+              else
+                table_1_values[relation[:method].to_sym] << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
+              end
             end
             DatabaseHandler::DatabaseObject.new(@table_name, table_1_values)
           else
@@ -370,6 +379,7 @@ module DatabaseHandler
 
     # Gets the max value of a element in table found with the specified condition.
     #
+    # @param attribute [Symbol] The attribute to get data from.
     # @param condition [Array] An array of symbols, declaring the conditions.
     # @return [Integer] Returns the value of elements found with the conditions.
     def self.max(attribute, *condition)
@@ -384,12 +394,28 @@ module DatabaseHandler
 
     # Gets the minimum value of a element in table found with the specified condition.
     #
+    # @param attribute [Symbol] The attribute to get data from.
     # @param condition [Array] An array of symbols, declaring the conditions.
     # @return [Integer] Returns the value of elements found with the conditions.
     def self.min(attribute, *condition)
       begin
         con_query = generate_condition_query(condition, nil)
         $database.execute("SELECT MIN(#{attribute.to_s}) FROM #{@table_name} #{con_query[0]}", *get_values_from_condition(condition))[0][0].to_i
+      rescue => e
+        p e.backtrace
+        nil
+      end
+    end
+
+    # Gets the sum of elements in an attribute specified with condition.
+    #
+    # @param attribute [Symbol] The attribute to get data from.
+    # @param condition [Array] An array of symbols, declaring the conditions.
+    # @return [Integer] Returns the value of elements found with the conditions.
+    def self.sum(attribute, *condition)
+      begin
+        con_query = generate_condition_query(condition, nil)
+        $database.execute("SELECT SUM(#{attribute.to_s}) FROM #{@table_name} #{con_query[0]}", *get_values_from_condition(condition))[0][0].to_i
       rescue => e
         p e.backtrace
         nil

@@ -24,6 +24,7 @@ html
         .nav_wrapper_center
           a#nav_title_home.nav_title href="/"  Hem
           a.nav_title href="/inventory"  Lager
+          a.nav_title href="/orders"  Inköpslistor
           a.nav_title href="/wiki"  Wiki
       #right_nav
         .nav_wrapper_right
@@ -61,22 +62,27 @@ html
           h4 Hem
         a href="/inventory"
           h4 Lager
+        a href="/orders"
+          h4 Inköpslistor
         a href="/wiki"
           h4 Wiki
+    nav#print_title
+      h1 IT-Gymnasiets Makerspace
+
 
     == yield
 
     footer#footer_desktop
       a href="https://www.it-gymnasiet.se"
         img.itg_logo alt="" src="/images/itgymnasiet_logo_horizontal.png"
-      p Version: 2.5.2
+      p Version: 2.6.0
       p |
       p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
       javascript:
           TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL1", "none");
     footer#footer_mobile
       p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
-      p Version: 2.5.2
+      p Version: 2.6.0
       javascript:
         TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL2", "none");
       a href="https://www.it-gymnasiet.se"

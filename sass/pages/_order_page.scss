@@ -1,0 +1,131 @@
+@media print {
+  #order_page {
+    #buttons {
+      display: none;
+    }
+    .info {
+      flex-direction: column;
+      text-align: center;
+      table {
+        text-align: left;
+        .order_info {
+          margin: 0 20px 0 0;
+        }
+        p {
+          margin: 0;
+          font-size: 14px;
+        }
+      }
+    }
+
+    #items{
+      table {
+        width: 100%;
+
+        td {
+          font-size: 12px;
+          text-align: left;
+        }
+
+        p {
+          margin: 5px 0;
+        }
+
+        .align_center {
+          text-align: center;
+        }
+
+        .align_right {
+          text-align: right;
+        }
+      }
+    }
+
+  }
+}
+
+@media screen {
+  #order_page {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    #main {
+      margin-top: 40px;
+      width: 80vw;
+      display: flex;
+      flex-direction: column;
+
+      .info {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+
+        #actions {
+          display: flex;
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+
+          #titles {
+            display: flex;
+            flex-direction: column;
+            h1, h3 {
+              margin: 5px 0;
+            }
+          }
+
+          #buttons {
+            display: flex;
+            flex-direction: row;
+
+            a {
+              margin-left: 20px;
+            }
+          }
+        }
+      }
+
+      #items {
+        width: 100%;
+        text-align: center;
+
+        table {
+          width: 100%;
+
+          .name {
+            width: 100%;
+          }
+
+          td {
+            font-size: 1.2em;
+            text-align: left;
+            flex-direction: row;
+            padding: 0 5px;
+          }
+
+          p {
+            margin: 10px 0;
+          }
+
+          .align_center {
+            text-align: center;
+          }
+
+          .align_right {
+            text-align: right;
+          }
+
+          .no_wrap {
+            white-space: nowrap;
+          }
+
+          input[type=submit], .a_button {
+            font-size: 1em;
+            padding: 5px 10px;
+          }
+        }
+      }
+    }
+  }
+}

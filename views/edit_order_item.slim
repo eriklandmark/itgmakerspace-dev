@@ -1,0 +1,29 @@
+- content_for :title do
+  | Inköpslistor - #{Orders.first(:id => order_id).name} - Saker - Ändra
+
+article#new_order_item.main
+  #main
+    form#new_order_item_form action="/orders/#{order_id}/items/#{item.id}/edit" method="post"
+      input type="hidden" name="_method" value="patch"
+      #actions
+        h2 Ändra på en sak i listan:
+        div
+          a.a_button href="/orders/#{order_id}" Avbryt
+          input type="submit" value="Spara"
+      table
+        tr
+          td
+            h3 Namn:
+          td
+            h3 Antal:
+          td
+            h3 Pris: (kr)
+        tr
+          td
+            input type="text" name="order-item-name" required="required" size="80" value=item.name
+          td
+            input type="number" name="order-item-quantity" required="required" size="4" maxlength="4" value=item.quantity
+          td
+            input type="number" name="order-item-price" required="required" size="4" maxlength="4" step="0.01" value=item.price
+      h3 Länk till saken:
+      input type="text" name="order-item-url" required="required" value=item.url

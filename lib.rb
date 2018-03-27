@@ -18,3 +18,9 @@ def get_inv_img_ext_from_id(id)
     return file.split(".")[1].to_s if file.include?(id.to_s)
   end
 end
+
+def valid_json?(json)
+  !!JSON.parse(json)
+rescue JSON::ParserError => _
+  false
+end

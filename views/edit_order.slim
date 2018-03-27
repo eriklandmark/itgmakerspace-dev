@@ -1,0 +1,24 @@
+- order = Orders.first(:id => order_id)
+- content_for :title do
+  | Inköpslistor - #{order.name} - Ändra
+
+article#order-new-edit.main
+  #main
+    form#new_order_form action="/orders/#{order_id}/edit" method="post"
+      input type="hidden" name="_method" value="patch"
+      #actions
+        h2 Lägg till ny inköpslista:
+        input type="submit" value="Spara"
+      table
+        tr
+          td
+            h3 Namn: *
+          td
+            h3 Sista datum: *
+        tr
+          td
+            input type="text" name="order-name" required="required" id="order-name" value="#{order.name}"
+          td
+            input type="date" name="date-due-by" required="required" value="#{order.date_due_by}"
+      h3 Beskrivning:
+      textarea#item-description name="order-description" form="new_order_form" = order.description
