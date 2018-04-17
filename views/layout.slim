@@ -49,13 +49,14 @@ html
           a.nav_title href="/users/new" Registrera
           p |
           a.nav_title href="/session/new" Logga In
-      #user_menu
-        h3 Välkommen #{$current_user.name}
-        - if has_auth_level?(2)
-          a href="/admin" Admin Panel
-        a href="/users/#{session[:user_id]}/edit"
-          p Redigera profil
-        a href="/users/#{session[:user_id]}/loans"  Lånade saker
+      -if logged_in?
+        #user_menu
+          h3 Välkommen #{$current_user.name}
+          - if has_auth_level?(2)
+            a href="/admin" Admin Panel
+          a href="/users/#{session[:user_id]}/edit"
+            p Redigera profil
+          a href="/users/#{session[:user_id]}/loans"  Lånade saker
     nav#nav_mobile
       h5
         span.itg-logo-blue I
