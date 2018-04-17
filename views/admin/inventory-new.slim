@@ -1,0 +1,58 @@
+- content_for :title do
+  | Admin - Lager - Ny Artikel
+
+== slim :"parts/admin_menu"
+
+#admin-main.main
+  .inventory-main
+    form#update_item_form.new_edit_item_form action="/inventory/new" method="post" enctype="multipart/form-data"
+      #actions
+        h2 Lägg till ny artikel
+        input type="submit" value="Spara"
+      section#upper
+        #product_image_div
+          section
+            img#product_image src="#" alt="Lägg till artikelbild.."
+        #product_info_div
+          h4 Artikelnamn:
+          input type="text" name="item-name" required="required"
+          table
+            tr
+              td
+                h4 Streckkod:
+              td
+                h4 Antal i lager:
+              td
+                h4 Kategori:
+            tr
+              td
+                - max_id = Inventory.max(:id).to_i + 2
+                input type="text" name="item-barcode" required="required" id="item-barcode" value="#{'0000'[0..(3 -max_id.to_s.length)].to_s + max_id.to_s}"
+              td
+                input type="number" name="item-quantity" required="required" pattern="{1,}"
+              td
+                select name="item-category" required="required"
+                  option value="0" ...Välj Kategori...
+                  - Categories.get_categories.each do |category|
+                    option value="#{category[:category_id]}" = category[:category_name]
+          h4 Artikelbild:
+          input#product_image_input type="file" name="item-picture" accept="image/*"
+          h4 Artikel specifikationer:
+          textarea#item-specs name="item-specs" form="update_item_form"
+      section#lower
+        h3 Beskrivning:
+        textarea#item-description name="item-description" form="update_item_form"
+        div#preview_actions
+          h3 Preview:
+          input type="button" value="Update" onclick="update_item_page_preview()"
+        #item_page_preview
+          #item_specs_div
+            #item_image
+              img#item_spec_image src="#" alt="Lägg till artikelbild.."
+            .item_divider
+            #item_specs
+          p#item-description-preview
+
+javascript:
+    document.getElementById("product_image_input").onchange = show_preview_image;
+    update_item_page_preview();

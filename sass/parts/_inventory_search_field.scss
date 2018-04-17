@@ -1,9 +1,3 @@
-#search_margin_box {
-  width: 100%;
-  height: 70px;
-  background-color: transparent;
-}
-
 #inventory_search_div {
   position: fixed;
   display: flex;
@@ -11,7 +5,7 @@
   align-items: center;
   justify-content: center;
   width: 100vw;
-  height: 70px;
+  height: 65px;
   top: $nav_bar_height;
   left: 0;
   background-color: lightgray;
@@ -20,41 +14,36 @@
     display: flex;
     flex-direction: row;
     width: 50%;
+    padding: 2px 15px;
+    border-radius: 100px;
+    border: 2px solid grey;
+    background-color: white;
+
+    &:focus {
+      border: 2px solid black;
+    }
 
     @media (max-width: $max_mobile_width) {
-      width: 90%;
+      width: 80%;
     }
 
     input[type="search"] {
       font-family: "Open Sans", sans-serif;
       font-size: 1em;
-      padding: 8px 15px;
-      border-radius: 100px;
-      border: 2px solid grey;
+      border: none;
       width: 100%;
       background-color: white;
-      &:focus {
-        border: 2px solid black;
-        outline: none;
-      }
+      outline: none;
     }
 
-    input[type="submit"] {
-      border: 2px solid grey;
-      background-color: white;
-      font-family: "Open Sans", sans-serif;
-      font-size: 1em;
-      padding: 8px 20px;
-      border-radius: 100px;
-      margin-left: 10px;
+    img {
+      width: 32px;
+      height: 32px;
+      margin-left: 5px;
       &:hover {
         cursor: pointer;
-        //background: linear-gradient(90deg,#009cdd, #eb0088, #f6932c);
-        //color: white;
-        border: 2px solid black;
       }
       &:focus {
-        border: 2px solid black;
         outline: none;
       }
     }

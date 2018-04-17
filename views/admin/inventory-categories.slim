@@ -1,0 +1,33 @@
+
+== slim :"parts/admin_menu"
+
+#admin-main.main
+  .inventory-main
+    #new_category
+      h3 Skapa ny kategori:
+      form action="/admin/inventory/categories/new" method="post"
+        input type="text" name="category-name" placeholder="Namn på kategorin.."
+        input type="submit" value="Skapa Kategori"
+    #categories
+      h2 Kategorier:
+      table
+        - Categories.all.each do |category|
+          tr
+            td.category_name_column
+              a href="/inventory?category=#{category.id}"
+                h3 id="category_name_#{category.id}" = category.name
+              form.edit_category_form id="edit_category_#{category.id}" action="/admin/inventory/categories/#{category.id}" method="post"
+                input type="hidden" name="_method" value="patch"
+                input type="text" name="category-name" value="#{category.name}"
+                a.a_button_w_img_small title="Spara" onclick="document.getElementById('edit_category_#{category.id}').submit();"
+                  img src="/icons/save_icon.svg"
+                a.a_button_w_img_small title="Avbryt" onclick="document.getElementById('category_name_#{category.id}').style.display = 'flex'; document.getElementById('edit_category_#{category.id}').style.display = 'none';"
+                  img src="/icons/cancel_icon.svg"
+            td
+              .actions
+                form id="delete_category_#{category.id}" action="/admin/inventory/categories/#{category.id}" method="post"
+                  input type="hidden" name="_method" value="delete"
+                  a.a_button_w_img_small title="Ta bort #{category.name}" onclick=("question('Vill du verkligen ta bort #{category.name}?', function () {document.getElementById('delete_category_#{category.id}').submit()});")
+                    img src="/icons/delete_icon.svg"
+                a.a_button_w_img_small title="Redigera #{category.name}" onclick="document.getElementById('category_name_#{category.id}').style.display = 'none'; document.getElementById('edit_category_#{category.id}').style.display = 'flex';"
+                  img src="/icons/edit_icon.svg"

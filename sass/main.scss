@@ -24,10 +24,30 @@ body {
   }
 }
 
+@mixin media-mobile {
+  @media (max-width: $max_mobile_width) {
+    @content;
+  }
+}
+
+@mixin media-small-screen {
+  @media (max-width: 360px) {
+    @content;
+  }
+}
+
+@mixin media-desktop {
+  @media (min-width: $max_mobile_width + 1px) {
+    @content;
+  }
+}
+
+@import "parts/inputs";
 @import "parts/navigation_bar";
 @import "parts/inventory_search_field";
 @import "parts/categories_list";
 @import "parts/footer";
+@import "parts/modal_box";
 
 @media screen {
   .main {
@@ -49,19 +69,18 @@ body {
   }
 }
 
-@import "parts/inputs";
 @import "pages/index";
 @import "pages/inventory";
 @import "pages/login";
 @import "pages/register";
 @import "pages/my_loans";
 @import "pages/item_page";
-@import "pages/change_password";
+@import "pages/user-edit";
+@import "pages/user-change-password";
 @import "pages/error_page";
 @import "pages/wiki";
 @import "pages/under_construction";
-@import "pages/add_inventory_item";
-@import "pages/new_order";
 @import "pages/orders";
 @import "pages/order_page";
 @import "pages/new_order_item";
+@import "pages/admin";

@@ -1,0 +1,37 @@
+- content_for :title do
+  | Admin - Konton
+
+== slim :"parts/admin_menu"
+
+#admin-main.main
+  .accounts-main
+    - user = Users.first(:id => params["user_id"])
+    - unless user.nil?
+      form action="/admin/accounts/#{user.id}" method="post"
+        input id="hidden" type="hidden" name="_method" value="patch"
+        #actions
+          h2 Redigera konto: #{user.name}
+          input type="submit" value="Spara"
+        h4 Fullt Namn:
+        input type="text" name="user-full_name" value="#{user.name}" required="required" placeholder="Anders Andersson"
+        h4 Email:
+        input type="text" name="user-email" value="#{user.email}" required="required" placeholder="anders.andersson@email.se"
+        h4 Lösenord:
+        input type="password" name="user-password" placeholder="Nytt lösenord?"
+        table
+          tr
+            td
+              h4 Födelsedag:
+            td
+              h4 Konto Nivå:
+          tr
+            td
+              input type="date" name="user-birth_date" value="#{user.birth_date}" required="required"
+            td
+              select name="user-auth_level" required="required"
+                - if user.permission_level == 1
+                  option value="1" selected="selected" Standard
+                  option value="2" Admin
+                - else
+                  option value="1" Standard
+                  option value="2" selected="selected" Admin

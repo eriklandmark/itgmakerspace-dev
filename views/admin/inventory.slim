@@ -1,0 +1,59 @@
+== slim :"parts/admin_menu"
+#admin-main.main
+  .inventory-main
+    h1 Alla sakerna i lagret:
+    h2 Statistik
+    table.statistics_table
+      tr
+        td
+          h4 Totalt antal olika saker:
+        td
+          p #{Inventory.count}
+      tr
+        td
+          h4 Totalt antal lån:
+        td
+          p #{Loans.count}
+      tr
+        td
+          h4 Totalt antal saker i lagret:
+        td
+          p #{Inventory.sum(:stock_quantity)}
+      tr
+        td
+          h4 Totalt antal lånade saker:
+        td
+          p #{Loan_Items.sum(:quantity)}
+
+    h2 Lagret
+    table.items_table
+      tr
+        td
+        td
+          h3 Namn
+        td
+          h3 Antal
+        td
+          h3 Kategori
+        td
+      - categories = Categories.get_category_list
+      - extensions = get_inv_img_ext
+      - Inventory.all.each do |item|
+        tr
+          td.item_picture
+            a href="/inventory/#{item.id}"
+              img alt="TBA" src="/product_images/product_#{item.id}.#{extensions['product_' + item.id.to_s]}"
+          td
+            a href="/inventory/#{item.id}" = item.name
+          td
+            p #{item.quantity} / #{item.stock_quantity}
+          td
+            p = categories[item.category]
+          td
+            .actions
+              form id="delete_item_#{item.id}" action="/inventory/#{item.id}/delete" method="post"
+                input type="hidden" name="_method" value="delete"
+                a.a_button_w_img_small title="Ta bort #{item.name}"
+                  img src="/icons/delete_icon.svg" onclick=("question('Vill du verkligen ta bort #{item.name} från listan?', function () {document.getElementById('delete_item_#{item.id}').submit()});")
+              a.a_button_w_img_small href="/admin/inventory/edit?item_id=#{item.id}" title="Redigera #{item.name}"
+                img src="/icons/edit_icon.svg"

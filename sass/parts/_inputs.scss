@@ -1,25 +1,28 @@
 input[type=submit], input[type=button], input[type=reset] {
-  background-color: lightgray;
+  background-color: buttonface;
   border: none;
   font-family: "Open Sans", sans-serif;
   font-size: 1.3em;
   padding: 10px 20px;
   color: black;
   box-sizing : border-box;
-
-  &:disabled {
-    background-color: #f4f4f4;
-    color: lightgray;
-  }
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
 
   &:hover {
     cursor: pointer;
+  }
+
+  &:focus {
+    outline: none;
   }
 }
 
 input[type=text], select, input[type=number], input[type=file], input[type=email], input[type=password], input[type=date] {
   border: 2px solid gray;
-  border-radius: 5px;
+  border-radius: 6px;
   background-color: white;
   font-family: "Open Sans", sans-serif;
   font-size: 1.2em;
@@ -43,6 +46,11 @@ textarea {
   padding: 5px;
   resize: vertical;
   box-sizing: border-box;
+
+  &:focus {
+    border: 2px solid black;
+    outline: none;
+  }
 }
 
 label {
@@ -53,4 +61,29 @@ label {
 .a_button {
   @extend input[type=button];
   text-decoration: none;
+}
+
+.a_button_w_img {
+  @extend .a_button;
+  padding: 5px;
+  img {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+.a_button_w_img_small {
+  @extend .a_button;
+  padding: 5px;
+  img {
+    width: 24px;
+    height: 24px;
+  }
+
+  max-width: 34px;
+}
+
+.b_disabled {
+  background-color: #f4f4f4 !important;
+  color: lightgray !important;;
 }

@@ -1,0 +1,31 @@
+- content_for :title do
+  | Admin - Konton
+
+== slim :"parts/admin_menu"
+
+#admin-main.main
+  .accounts-main
+    form action="/admin/accounts/new" method="post"
+      input id="hidden" type="hidden" name="_method" value="patch"
+      #actions
+        h2 Nytt konto:
+        input type="submit" value="Spara"
+      h4 Fullt namn:
+      input type="text" name="user-full_name" placeholder="Anders Andersson" required="required"
+      h4 Email:
+      input type="text" name="user-email" placeholder="anders.andersson@email.se" required="required"
+      h4 Password:
+      input type="password" name="user-password" placeholder="password"
+      table
+        tr
+          td
+            h4 Födelsedag:
+          td
+            h4 Konto Nivå:
+        tr
+          td
+            input type="date" name="user-birth_date" required="required"
+          td
+            select name="user-auth_level" required="required"
+              option value="1" Standard
+              option value="2" Admin

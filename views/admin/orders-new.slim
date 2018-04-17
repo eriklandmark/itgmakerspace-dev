@@ -1,8 +1,10 @@
 - content_for :title do
   | Inköpslistor - Ny
 
-article#order-new-edit.main
-  #main
+== slim :"parts/admin_menu"
+
+#admin-main.main
+  .orders-main
     form#new_order_form action="/orders/new" method="post"
       #actions
         h2 Lägg till ny inköpslista:

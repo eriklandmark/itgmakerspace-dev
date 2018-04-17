@@ -1,0 +1,22 @@
+input#menu_icon_input type="checkbox"
+label#menu_icon for="menu_icon_input"
+  i
+section.primary_nav
+  ul
+    li
+      a href="/wiki/3d-printer"
+        img.icon src="/icons/3d_printer_icon.svg"
+        | 3D Skrivare
+      ul.under_nav
+        li onclick="document.getElementById('menu_icon_input').checked = false"
+          a href="/wiki/3d-printer#introduktion" Introduktion
+        li onclick="document.getElementById('menu_icon_input').checked = false"
+          a href="/wiki/3d-printer#hardvara" Hårdvara
+        li onclick="document.getElementById('menu_icon_input').checked = false"
+          a href="/wiki/3d-printer#material" Material
+        li onclick="document.getElementById('menu_icon_input').checked = false"
+          a href="/wiki/3d-printer#tips" Tips
+    li
+      a href="/wiki/cura"
+        img.icon src="/icons/cura.png"
+        | Cura

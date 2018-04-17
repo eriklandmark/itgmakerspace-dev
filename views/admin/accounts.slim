@@ -1,0 +1,42 @@
+- content_for :title do
+  | Admin - Konton
+
+== slim :"parts/admin_menu"
+
+#admin-main.main
+  .accounts-main
+    h1 Alla konton:
+    h2 Statistik
+    table.statistics_table
+      tr
+        td
+          h4 Antal konton:
+        td
+          p #{Users.count} st.
+    h2 Konton
+    table.items_table
+      tr
+        td
+          h3 Namn
+        td
+          h3 Email
+        td
+          h3 Ålder
+        td
+
+      - Users.all.each do |user|
+        tr
+          td
+            p = user.name
+          td
+            p = user.email
+          td
+            p = user.birth_date
+          td
+            .actions
+              form id="delete_user_#{user.id}" action="/admin/accounts/#{user.id}" method="post"
+                input type="hidden" name="_method" value="delete"
+                a.a_button_w_img_small title="Ta bort #{user.name}"
+                  img src="/icons/delete_icon.svg" onclick=("question('Vill du verkligen ta bort #{user.name}?', function () {document.getElementById('delete_user_#{user.id}').submit()});")
+              a.a_button_w_img_small href="/admin/accounts/edit?user_id=#{user.id}" title="Redigera #{user.name}"
+                img src="/icons/edit_icon.svg"

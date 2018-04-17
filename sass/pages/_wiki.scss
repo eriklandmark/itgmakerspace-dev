@@ -1,32 +1,177 @@
-#printer-main {
+#wiki-main {
   display: flex;
   flex-direction: row;
 
-  .site_tree {
-    width: 20%;
+  .primary_nav {
+    position: fixed;
+    height: 100%;
+    width: 60px;
+    font-size: .8em;
+    background-color: lightgray;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    transition: width 246ms .5s ease;
+    padding-top: 60px;
+    overflow: hidden;
+    box-sizing: border-box;
+    z-index: 1;
 
-    #list {
-      position: fixed;
-      display: flex;
-      flex-direction: column;
+    @include media-mobile {
+      height: 60px;
+      width: 100%;
+      transition: height 246ms .5s ease;
+    }
 
-      h2 {
-        margin: 50px 0 10px 0;
+    > ul {
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    li {
+      position: relative;
+
+      a {
+        font-family: "Open Sans", sans-serif;
+        position: relative;
+        display: flex;
+        align-items: center;
+        white-space: nowrap;
+        color: black;
+        text-decoration: none;
+        font-weight: bold;
+        text-transform: uppercase;
+      }
+
+      &:hover {
+        background-color: rgba(0,0,0,0.15)
+      }
+    }
+
+    .icon {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      flex-shrink: 0;
+      padding: 14px;
+      margin-right: 5px;
+    }
+  }
+
+  .under_nav {
+    list-style: none;
+    margin-left: 65px;
+    border-left: 2px solid rgba(0,0,0,0.15);
+    overflow: hidden;
+    padding: 0;
+
+    li {
+      max-height: 0;
+      transition: max-height .5s;
+
+      @media (max-width: $max_mobile_width) {
+        max-height: 100px;
+        transition: max-height .5s;
       }
 
       a {
-        margin-top: 10px;
+        text-transform: initial;
+        display: block;
+        color: inherit;
+        font-weight: 400;
+        padding: .75em 10px;
+      }
+
+      &:hover {
+        background-color: rgba(0,0,0,0.15);
+      }
+    }
+  }
+
+  #menu_icon_input {
+    display: none;
+    &:checked {
+      & ~ section.primary_nav {
+        height: 100%;
+        @include media-desktop {
+          width: 275px;
+        }
+
+        .under_nav > li {
+          @include media-desktop {
+            @for $i from 1 through 10 {
+              &:nth-child(#{$i}) {
+                transition: max-height .5s #{.65 + $i * .02}s ease-in-out;
+              }
+            }
+            max-height: 100px;
+          }
+        }
+      }
+      & ~ label {
+        > i {
+          background-color: transparent;
+          transform: rotate(90deg);
+          &:before {
+            transform: translate(-50%, -50%) rotate(315deg);
+          }
+          &:after {
+            transform: translate(-50%, -50%) rotate(-315deg);
+          }
+        }
+      }
+    }
+  }
+
+  #menu_icon {
+    z-index: 101;
+    display: block;
+    height: 24px;
+    width: 24px;
+    position: fixed;
+    top: $nav_bar_height + 14px;
+    left: 17px;
+    &:hover {
+      cursor: pointer;
+    }
+    i {
+      position: absolute;
+      width: 100%;
+      height: 2px;
+      top: 50%;
+      background-color: black;
+      pointer-events: auto;
+      transition-duration: .35s;
+      transition-delay: .35s;
+
+      &:before, &:after {
+        position: absolute;
+        display: block;
+        width: 100%;
+        height: 2px;
+        left: 50%;
+        content: "";
+        background-color: black;
+        transition: transform 0.35s;
+        transform-origin: 50% 50%;
+      }
+      &:before {
+        transform: translate(-50%, -7px);
+      }
+      &:after {
+        transform: translate(-50%, 7px);
       }
     }
   }
 
   #content {
-    width: 80%;
+    width: 100%;
     height: 100%;
-    padding-right: 5%;
+    padding: 0 4%;
+    margin-left: 60px;
 
     table {
       margin-top: 15px;
@@ -67,6 +212,10 @@
 
     .article {
       overflow: auto;
+    }
+
+    ul {
+      list-style: inherit;
     }
   }
 

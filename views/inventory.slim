@@ -1,8 +1,8 @@
 - content_for :title do
   | Lager
 
+== slim :"parts/inventory_search_field"
 article#inventory_main.main
-  == slim :"parts/inventory_search_field"
   #category_box
     == slim :"parts/category_list"
   #inventory
@@ -12,28 +12,16 @@ article#inventory_main.main
           .title_bar
             .title
               h2 Sökning: "#{search_term}"
-            - if !session[:permission_level].nil? && session[:permission_level] >= 2
-              .actions
-                a href="/inventory/new"
-                  button Lägg till artikel
           p Här är sökresultatet för "#{search_term}" som finns i lagret. Lager statusen är inte garanterad.
         - else
           .title_bar
             .title
               h2 Alla saker:
-            - if !session[:permission_level].nil? && session[:permission_level] >= 2
-              .actions
-                a href="/inventory/new"
-                  button Lägg till artikel
           p Här kan du hitta all elektronik, prylar, byggsatser m.m som finns att använda. Lager statusen är självklart inte garanterad.
       - else
         .title_bar
           .title
             h2 Kategori: #{category_name}
-          - if !session[:permission_level].nil? && session[:permission_level] >= 2
-            .actions
-              a href="/inventory/new"
-                button Lägg till artikel
         p Här finns alla saker i lagret inom kategorin #{category_name}. Lagerstatusen är inte granterad.
     p Obs: Bilder och informationstexter till alla föremålen kommer att läggas till i efterhand.
     #sorting
@@ -48,17 +36,21 @@ article#inventory_main.main
         u onclick="open_link('sort_after=quantity_desc')" Fallande
     .item_divider
     #inventory_items
+
       - if inventory != nil && inventory.length > 0
         - extensions = get_inv_img_ext
         - inventory.each do |item|
           .item
             .item_picture
-              a href="/inventory/#{item[:id]}"
-                img alt="TBA" src="product_images/product_#{item[:id]}.#{extensions['product_' + item[:id].to_s]}"
+              a href="/inventory/#{item.id}"
+                img alt="TBA" src="product_images/product_#{item.id}.#{extensions['product_' + item.id.to_s]}"
             .item_info
-              p.item_quantity I lager: #{item[:quantity]} / #{item[:stock_quantity]}
-              a href="/inventory/#{item[:id]}" = item[:name]
-              p.item_description = item[:description].length > 100 ? item[:description][0..97].chomp.strip +  "..." : item[:description][0..97]
+              p.item_quantity I lager: #{item.quantity} / #{item.stock_quantity}
+              a href="/inventory/#{item.id}" = item.name
+              - if item.description.nil? || item.description == ""
+                p.item_description = "Beskrivning av artikel kommer inom kort."
+              - else
+                p.item_description = item.description.length > 100 ? item.description[0..97].chomp.strip +  "..." : item.description[0..97]
           .item_divider
       - else
         - if search_term != nil && search_term != ''

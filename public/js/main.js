@@ -49,6 +49,37 @@ function close_mobile_menu() {
     }
 }
 
+var modal_action = null;
+
+function perform_action() {
+    if (modal_action !== null) {
+        modal_action();
+    }
+}
+
+function close_modal_box() {
+    document.getElementById("modal_box_dimmer").style.display = "none";
+    document.getElementById("modal_box_info").style.display = "none";
+    document.getElementById("modal_box_question").style.display = "none";
+    document.getElementById("modal_box_info").className = "modal_box";
+    document.getElementById("modal_box_question").className = "modal_box";
+}
+
+function info(msg) {
+    document.getElementById("modal_box_dimmer").style.display = "flex";
+    document.getElementById("modal_box_info").style.display = "flex";
+    document.getElementById("modal_box_info_text").innerText = msg.toString();
+    document.getElementById("modal_box_info").className += " animate_modal_box";
+}
+
+function question(msg, action) {
+    document.getElementById("modal_box_dimmer").style.display = "flex";
+    document.getElementById("modal_box_question").style.display = "flex";
+    document.getElementById("modal_box_question_text").innerText = msg.toString();
+    document.getElementById("modal_box_question").className += " animate_modal_box";
+    modal_action = action;
+}
+
 function footer_event() {
     if (Math.max(document.body.scrollHeight, document.body.offsetHeight) > window.innerHeight) {
         document.getElementById("footer_desktop").style.position = "relative";
@@ -121,7 +152,7 @@ function open_user_menu() {
     } else {
         menu.style.right = "0px";
     }
-    menu.style.visibility = "visible";
+    menu.style.height = "180px";
 }
 
 window.addEventListener("resize", function () {
@@ -138,7 +169,7 @@ window.addEventListener("resize", function () {
 
 window.addEventListener("click", function (e) {
     var menu = document.getElementById("user_menu");
-    if(menu.style.visibility === "visible") {
+    if(menu.style.height === "180px") {
         var x;
         var y;
         if (e.pageX || e.pageY) {
@@ -156,7 +187,7 @@ window.addEventListener("click", function (e) {
         var maxy = menu.offsetTop + menu.offsetHeight;
 
         if(!(x >= minx && x <= maxx && y >= miny && y <= maxy)) {
-            menu.style.visibility = "hidden";
+            menu.style.height = "0";
         }
     }
 }, true);

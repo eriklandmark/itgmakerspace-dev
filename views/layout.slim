@@ -1,3 +1,6 @@
+- $current_user = nil
+- unless session[:user_id].nil?
+  - $current_user = Users.first(:id => session[:user_id])
 doctype html
 html
   javascript:
@@ -13,6 +16,15 @@ html
     title
       | ITG Makerspace - #{yield_content :title}
   body
+    #modal_box_dimmer
+    #modal_box_info.modal_box
+      p#modal_box_info_text
+      input type="button" value="OK" onclick="close_modal_box()"
+    #modal_box_question.modal_box
+      p#modal_box_question_text
+      section
+        input#modal_box_question_ja type="button" value="Ja" onclick="perform_action()"
+        input#modal_box_question_nej type="button" value="Nej" onclick="close_modal_box()"
     nav#nav_desktop
       #left_nav
         p.logga_text
@@ -27,20 +39,23 @@ html
           a.nav_title href="/orders"  Inköpslistor
           a.nav_title href="/wiki"  Wiki
       #right_nav
-        .nav_wrapper_right
-          - if session[:user_id] == nil
-            a.nav_title href="/session/new"  Logga In
-            p |
-            a.nav_title href="/users/new"  Registrera
-          - else
-            a onclick="open_user_menu()" = session[:user_full_name]
-      #user_menu
-        #user_menu_items
-          a href="/users/#{session[:user_id]}/loans"  Mina lån
-          a href="/users/#{session[:user_id]}/edit"  Ändra lösenord
+        - if logged_in?
+          img src="/icons/account_icon.svg" onclick="open_user_menu()"
+          p |
           form#logout_form action="/session/delete" method="post"
             input type="hidden" name="_method" value="delete"
-            p onclick="document.getElementById('logout_form').submit()"  Logga ut
+            img src="/icons/logout_icon.svg" onclick="document.getElementById('logout_form').submit()" title="Logga ut"
+        - else
+          a.nav_title href="/users/new" Registrera
+          p |
+          a.nav_title href="/session/new" Logga In
+      #user_menu
+        h3 Välkommen #{$current_user.name}
+        - if has_auth_level?(2)
+          a href="/admin" Admin Panel
+        a href="/users/#{session[:user_id]}/edit"
+          p Redigera profil
+        a href="/users/#{session[:user_id]}/loans"  Lånade saker
     nav#nav_mobile
       h5
         span.itg-logo-blue I
@@ -55,8 +70,8 @@ html
       canvas#menu_icon_bottom_bar
     #mobile_menu
       #logo_text_div
-        img src="/images/itg_logo_square.png"
         h3 Makerspace
+        img src="/images/itg_logo_square.png"
       #mobile_menu_links
         a href="/"
           h4 Hem
@@ -69,20 +84,19 @@ html
     nav#print_title
       h1 IT-Gymnasiets Makerspace
 
-
     == yield
 
     footer#footer_desktop
       a href="https://www.it-gymnasiet.se"
         img.itg_logo alt="" src="/images/itgymnasiet_logo_horizontal.png"
-      p Version: 2.6.0
+      p Version: 2.7.0
       p |
       p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
       javascript:
           TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL1", "none");
     footer#footer_mobile
       p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
-      p Version: 2.6.0
+      p Version: 2.7.0
       javascript:
         TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL2", "none");
       a href="https://www.it-gymnasiet.se"

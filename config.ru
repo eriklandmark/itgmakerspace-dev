@@ -5,13 +5,20 @@ require 'sinatra/default_charset'
 require 'webrick/https'
 require 'rack/ssl-enforcer'
 require 'rack/rewrite'
-require "net/https"
-require "uri"
+require 'net/https'
+require 'uri'
 
 require_relative 'ErrorHandler'
 require_relative 'DatabaseHandler'
 require_relative 'lib'
 require_relative 'helpers'
+require_relative 'routes/admin'
+require_relative 'routes/api'
+require_relative 'routes/inventory'
+require_relative 'routes/orders'
+require_relative 'routes/sessions'
+require_relative 'routes/users'
+require_relative 'routes/wiki'
 require_relative 'app'
 
 register Sinatra::DefaultCharset
@@ -32,7 +39,7 @@ class HTTPServer < Sinatra::Base
   end
 
   get '/' do
-    "Did not work"
+    "Did not work. Try to type in <br> https://www.itgmaker.space"
   end
 end
 

@@ -10,15 +10,12 @@ article#order_page.main
           h1 Inköpslista
           h3.screen = order.name
         #buttons
-          - if has_auth_level?(2)
-            form action="/orders/#{order_id}/delete" method="post"
-              input type="hidden" name="_method" value="delete"
-              input type="submit" value="Tabort lista"
-            a.a_button href="/orders/#{order_id}/edit" Redigera lista
           - if logged_in?
-            a.a_button href="/orders/#{order_id}/items/new" Lägg till i lista
+            a.a_button_w_img href="/orders/#{order_id}/items/new" title="Lägg till i listan"
+              img src="/icons/create_icon.svg"
           - else
-            input type="button" value="Lägg till i lista" disabled=""
+            a.a_button_w_img.b_disabled title="Lägg till i listan" onclick="info('Du måste vara inloggad för att lägga till i listan.')"
+              img src="/icons/create_icon_disabled.svg"
       p = order.description
     .info.print
       h2.print Inköpslista
@@ -49,14 +46,12 @@ article#order_page.main
             td.align_center
               h4 Totalpris:
             td.align_center
-              h4 Länk:
-            td.align_center
               h4 Tillagd av:
           - order.items.each do |item|
             -if item.status == Order_Items::ACTIVE
               tr
                 td.name
-                  p = item.name
+                  a href="#{item.url}" target="_blank" = item.name
                 td.align_center.no_wrap
                   p #{item.quantity} st
                 td.align_center.no_wrap
@@ -64,18 +59,20 @@ article#order_page.main
                 td.align_center.no_wrap
                   p #{(item.quantity.to_i*item.price.to_i)} kr
                 td.align_center.no_wrap
-                  a href="#{item.url}" target="_blank" Länk till saken
-                td.align_center.no_wrap
                   p = Users.first(:id => item.user_id).name
                 td.align_center.screen
-                  form action="/orders/#{order_id}/items/#{item.id}/delete" method="post"
+                  form id="delete_item_#{item.id}" action="/orders/#{order_id}/items/#{item.id}/delete" method="post"
                     input type="hidden" name="_method" value="delete"
                     - if has_auth_level?(2) || item.user_id.to_i == session[:user_id]
-                      input type="submit" value="Tabort"
+                      a.a_button_w_img_small title="Ta bort #{item.name}"
+                        img src="/icons/delete_icon.svg" onclick=("question('Vill du verkligen ta bort #{item.name} från listan?', function () {document.getElementById('delete_item_#{item.id}').submit()});")
                     - else
-                      input type="submit" value="Tabort" disabled=""
+                      a.a_button_w_img_small.b_disabled title="Ta bort #{item.name}" onclick="info('Du måste vara inloggad för att ta bort #{item.name}.')"
+                        img src="/icons/delete_icon_disabled.svg"
                 td.align_center.screen
                   - if has_auth_level?(2) || item.user_id.to_i == session[:user_id]
-                    a.a_button href="/orders/#{order_id}/items/#{item.id}/edit" Redigera
+                    a.a_button_w_img_small href="/orders/#{order_id}/items/#{item.id}/edit" title="Redigera #{item.name}"
+                      img src="/icons/edit_icon.svg"
                   - else
-                    input type="submit" value="Redigera" disabled=""
+                    a.a_button_w_img_small.b_disabled title="Redigera #{item.name}" onclick="info('Du måste vara inloggad för att redigera #{item.name}.')"
+                      img src="/icons/edit_icon_disabled.svg"

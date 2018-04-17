@@ -42,7 +42,7 @@ PLATFORMS
 DEPENDENCIES
   bcrypt
   json
-  openssl
+  openssl (>= 2.0.6)
   rack (~> 2.0, >= 2.0.4)
   rack-rewrite
   rack-ssl-enforcer

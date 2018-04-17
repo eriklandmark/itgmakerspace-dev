@@ -1,0 +1,37 @@
+- content_for :title do
+  | Inköpslitor
+
+== slim :"parts/admin_menu"
+
+#admin-main.main
+  .orders-main
+    h1 Inköpslistor
+    table.items_table
+      tr
+        td
+          h4 Namn:
+        td
+          h4 Antal saker:
+        td
+          h4 Total pris:
+        td
+          h4 Sista datum:
+        td
+      - Orders.all(:status => Orders::ACTIVE).each do |order|
+        tr
+          td
+            a href="/orders/#{order.id}" = order.name
+          td
+            p #{Order_Items.count(:order_id => order.id, :status => Order_Items::ACTIVE)} st
+          td
+            p #{Orders.get_total_price(order.id)} kr
+          td
+            p = order.date_due_by
+          td
+            .actions
+              form id="delete_order_#{order.id}" action="/orders/#{order.id}/delete" method="post"
+                input type="hidden" name="_method" value="delete"
+                a.a_button_w_img_small title="Ta bort #{order.name}"
+                  img src="/icons/delete_icon.svg" onclick=("question('Vill du verkligen ta bort #{order.name}?', function () {document.getElementById('delete_order_#{order.id}').submit()});")
+              a.a_button_w_img_small href="/admin/orders/edit?order_id=#{order.id}" title="Redigera #{order.name}"
+                img src="/icons/edit_icon.svg"

@@ -7,12 +7,13 @@
     position: relative;
     bottom: 0;
     width: 100vw;
-    //background: linear-gradient(90deg, #1f1f1f, #000);
     background-color: black;
     height: $footer_height;
     font-family: "Open Sans", sans-serif;
     margin-top: 5vh;
     color: white;
+    z-index: 100;
+    text-align: center;
 
     @media (max-width: $max_mobile_width) {
       flex-direction: column;

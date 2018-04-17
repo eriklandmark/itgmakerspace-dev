@@ -14,6 +14,16 @@ class Categories < DatabaseHandler::Table
     end
     return categories
   end
+
+  def self.get_category_list
+    categories = []
+    Categories.all(:order => [:name, :asc]).each do |category|
+      if category.id != 0
+        categories[category.id] = category.name
+      end
+    end
+    return categories
+  end
 end
 
 class Loan_Items < DatabaseHandler::Table

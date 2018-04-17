@@ -36,7 +36,6 @@
   nav {
     display: flex;
     background-color: black;
-    //background: linear-gradient(90deg, #1f1f1f, #000);
     flex-direction: row;
     justify-content: center;
     height: $nav_bar_height;
@@ -81,18 +80,6 @@
       align-items: center;
     }
 
-    .nav_wrapper_right {
-      width: 100%;
-      max-width: 190px;
-      display: flex;
-      flex-direction: row;
-      justify-content: space-around;
-      align-items: center;
-      p {
-        padding: 0;
-      }
-    }
-
     #left_nav {
       display: flex;
       flex-direction: row;
@@ -125,59 +112,73 @@
       display: flex;
       flex-direction: row;
       justify-content: center;
+      align-items: center;
       padding:  0 20px 0 20px;
 
-      .nav_wrapper {
-        max-width: 300px;
+      img {
+        width: 32px;
+        height: 32px;
+
+        &:hover {
+          cursor: pointer;
+        }
+      }
+
+      > p {
+        margin: -5px 15px 0 15px;
+        padding: 0;
+        font-size: 1.5em;
+      }
+
+      a, form {
+        display: flex;
+        vertical-align: middle;
+        white-space: nowrap;
+        justify-content: center;
+        align-items: center;
+        height: 32px;
+        padding: 0;
       }
     }
 
     #user_menu {
       position: fixed;
-      top: $nav_bar_height;
+      top: $nav_bar_height + 15px;
       right: 0;
-      min-width: 200px;
+      min-width: 250px;
+      padding: 0 10px;
       display: flex;
-      visibility: hidden;
       flex-direction: column;
-      z-index: 100;
+      z-index: 95;
+      background-color: #404040;
+      box-shadow:0 4px 10px #404040;
+      align-items: center;
+      justify-content: space-around;
+      border-radius: 4px;
+      height: 0;
+      overflow:hidden;
+      -webkit-transition:height 300ms ease-in-out;
+      -moz-transition:height 300ms ease-in-out;
+      -o-transition:height 300ms ease-in-out;
+      transition:height 300ms ease-in-out;
 
-      #user_menu_top {
-        width: 100%;
-        height: 50px;
-        background-color: transparent;
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
+      p, a, h3 {
+        color: white;
+        margin: 0;
+        padding: 0;
 
-        #triangle {
-          width: 2px;
-          height: 0;
-          border-bottom: 40px solid black;
-          border-left: 40px solid transparent;
-          border-right: 40px solid transparent;
+        &:hover {
+          cursor: pointer;
         }
       }
 
-      #user_menu_items {
-        background: linear-gradient(0deg, #393939, #000);
-        padding: 20px 20px;
-        height: 100%;
-        //border-radius: 20px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: space-around;
-
-        p, a {
-          color: white;
-          margin: 15px 0;
-          padding: 0;
-          font-weight: bold;
-          font-size: 1em;
-        }
+      p, a {
+        font-size: 1em;
       }
+    }
+
+    .open_user_menu {
+      height: 200px;
     }
   }
 
@@ -216,8 +217,6 @@
     }
   }
 
-
-
   #mobile_menu {
     display: flex;
     flex-direction: column;
@@ -233,16 +232,20 @@
     box-shadow: 0 0 20vw black;
     align-items: center;
 
-    @media (min-width: $max_mobile_width + 1px) {
+    @include media-desktop {
       display: none;
     }
 
+    @include media-small-screen {
+
+    }
     #logo_text_div {
       margin-top: 6vh;
-      color: white;
       font-size: 2em;
       display: flex;
       flex-direction: column;
+      align-items: center;
+      justify-content: center;
 
       h3 {
         color: white;
@@ -256,6 +259,7 @@
       flex-direction: column;
       justify-content: center;
       align-items: center;
+      text-decoration: none;
 
       h4 {
         font-size: 1.4em;
@@ -299,12 +303,12 @@
 
   .menu_icons {
     position: fixed;
-    top: 10px;
+    top: 15px;
     right: 80px;
     width: 32px;
     z-index: 104;
 
-    @media (min-width: $max_mobile_width + 1px) {
+    @include media-desktop {
       display: none;
     }
   }
@@ -312,7 +316,7 @@
   #mobile_menu_icon {
     position: fixed;
     display: flex;
-    top: 5px;
+    top: 10px;
     right: 20px;
     width: $menu_icon_width;
     height: $menu_icon_height;

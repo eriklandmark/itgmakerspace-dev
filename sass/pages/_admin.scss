@@ -1,0 +1,233 @@
+.admin_primary_nav {
+  position: fixed;
+  height: calc(100% - #{$footer_height} - #{$nav_bar_height});
+  width: 60px;
+  font-size: .8em;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  transition: width 246ms .5s ease;
+  padding-top: 60px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  box-sizing: border-box;
+  z-index: 1;
+  margin-top: $nav_bar_height;
+
+  @include media-desktop {
+    border-right: solid rgba(0,0,0,0.15) 2px;
+    border-bottom: solid rgba(0,0,0,0.15) 2px;
+  }
+
+  @include media-mobile {
+    height: 60px;
+    width: 100%;
+    transition: height 246ms .5s ease;
+    border-bottom: solid rgba(0,0,0,0.15) 2px;
+  }
+
+  > ul {
+    height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    position: relative;
+
+    a, span {
+      font-family: "Open Sans", sans-serif;
+      position: relative;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      white-space: nowrap;
+      color: black;
+      text-decoration: none;
+      font-weight: bold;
+      text-transform: uppercase;
+    }
+
+    &:hover {
+      background-color: rgba(0,0,0,0.15);
+      cursor: pointer;
+    }
+  }
+
+  .icon {
+    display: inline-block;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    padding: 14px;
+    margin-right: 5px;
+  }
+
+  .under_nav {
+    list-style: none;
+    margin-left: 65px;
+    border-left: 2px solid rgba(0,0,0,0.15);
+    overflow: hidden;
+    padding: 0;
+
+    li {
+      max-height: 0;
+      transition: max-height .5s;
+
+      @media (max-width: $max_mobile_width) {
+        max-height: 100px;
+        transition: max-height .5s;
+      }
+
+      a {
+        text-transform: initial;
+        display: block;
+        color: inherit;
+        font-weight: 400;
+        padding: .75em 10px;
+      }
+
+      &:hover {
+        background-color: rgba(0,0,0,0.15);
+      }
+    }
+  }
+}
+
+#menu_icon_input {
+  display: none;
+  &:checked {
+    & ~ section.admin_primary_nav {
+      height: calc(100% - #{$footer_height} - #{$nav_bar_height});
+      @include media-desktop {
+        width: 275px;
+      }
+
+      .under_nav > li {
+        @include media-desktop {
+          @for $i from 1 through 10 {
+            &:nth-child(#{$i}) {
+              transition: max-height .5s #{.65 + $i * .02}s ease-in-out;
+            }
+          }
+          max-height: 100px;
+        }
+      }
+    }
+    & ~ label {
+      > i {
+        background-color: transparent;
+        transform: rotate(90deg);
+        &:before {
+          transform: translate(-50%, -50%) rotate(315deg);
+        }
+        &:after {
+          transform: translate(-50%, -50%) rotate(-315deg);
+        }
+      }
+    }
+  }
+}
+
+#menu_icon {
+  z-index: 101;
+  display: block;
+  height: 24px;
+  width: 24px;
+  position: fixed;
+  top: $nav_bar_height + 14px;
+  left: 17px;
+  &:hover {
+    cursor: pointer;
+  }
+  i {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    top: 50%;
+    background-color: black;
+    pointer-events: auto;
+    transition-duration: .35s;
+    transition-delay: .35s;
+
+    &:before, &:after {
+      position: absolute;
+      display: block;
+      width: 100%;
+      height: 2px;
+      left: 50%;
+      content: "";
+      background-color: black;
+      transition: transform 0.35s;
+      transform-origin: 50% 50%;
+    }
+    &:before {
+      transform: translate(-50%, -7px);
+    }
+    &:after {
+      transform: translate(-50%, 7px);
+    }
+  }
+}
+
+#admin-main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  margin-left: 60px;
+
+  .inventory-main, .accounts-main, .orders-main {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: flex-start;
+    width: 80%;
+    margin-top: 30px;
+  }
+
+  .statistics_table  {
+    h4, p {
+      margin: 0;
+    }
+
+    td {
+      padding-right: 30px;
+    }
+  }
+
+  .items_table {
+    width: 100%;
+    border-collapse: collapse;
+
+    td {
+      border-bottom: solid rgba(0,0,0,0.15) 2px;
+      padding: 10px 0;
+    }
+
+    p {
+      margin: 0;
+    }
+
+    .item_picture img {
+      width: 50px;
+    }
+
+    .actions {
+      display: flex;
+      flex-direction: row;
+      float: right;
+
+      a {
+        margin-left: 15px;
+      }
+    }
+  }
+
+  @import "admin/inventory";
+  @import "admin/accounts";
+  @import "admin/orders";
+}

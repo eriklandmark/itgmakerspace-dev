@@ -1,0 +1,49 @@
+input#menu_icon_input type="checkbox"
+label#menu_icon for="menu_icon_input"
+  i
+section.admin_primary_nav
+  ul
+    li
+      span onclick="document.getElementById('menu_icon_input').checked = true;"
+        img.icon src="/icons/home_icon.svg"
+        | Hem
+    li
+      span onclick="document.getElementById('menu_icon_input').checked = true;"
+        img.icon src="/icons/accounts_icon.svg"
+        | Konton
+      ul.under_nav
+        li
+          a href="/admin/accounts" Alla konton
+        li
+          a href="/admin/accounts/new" Nytt konto
+    li
+      span onclick="document.getElementById('menu_icon_input').checked = true;"
+        img.icon src="/icons/inventory_icon.svg"
+        | Lager
+      ul.under_nav
+        li
+          a href="/admin/inventory" Alla artiklar
+        li
+          a href="/admin/inventory/new" Ny artikel
+        li
+          a href="/admin/inventory/categories" Kategorier
+    li
+      span onclick="document.getElementById('menu_icon_input').checked = true;"
+        img.icon src="/icons/orders_icon.svg"
+        | Beställningar
+      ul.under_nav
+        li
+          a href="/admin/orders" Alla beställningar
+        li
+          a href="/admin/orders/new" Skapa ny beställning
+    li
+      span onclick="document.getElementById('menu_icon_input').checked = true;"
+        img.icon src="/icons/database_icon.svg"
+        | Databasen
+      ul.under_nav
+        li
+          a href="/admin/database/backups" Backups
+        li
+          a href="/admin/database/backups-new" Skapa ny backup
+        li
+          a href="/admin/database/backups-restore" Äterställ från backup

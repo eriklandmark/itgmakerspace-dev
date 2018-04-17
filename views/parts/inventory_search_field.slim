@@ -1,7 +1,7 @@
 #inventory_search_div
-  form#search_form action="/inventory" method="get" onsubmit=("return document.getElementById('inventory_search_box').value.length > 0")
+  form#search_form action="/inventory" method="get"
     input#inventory_search_box list="item_names" name="search_term" placeholder=("Sök efter saker i lagret") type="search"
-    input type="submit" value="Sök"
+    img src="/icons/search_icon.svg" alt="Sök" onclick="document.getElementById('inventory_search_box').value.length > 0 ? document.getElementById('search_form').submit() : null;"
     datalist#item_names
       - Inventory.get_inventory_names.each do |name|
         option value="#{name[0]}" = name[1]
