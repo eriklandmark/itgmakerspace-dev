@@ -13,7 +13,7 @@ module Sinatra
         uri = URI.parse("https://www.google.com/recaptcha/api/siteverify?response=#{params['g-recaptcha-response']}&secret=6LdrnTkUAAAAACJ0UTJYDXjV2oVl_DoQsfIVwXm1")
         success = false
         Net::HTTP.start(uri.host, uri.port, :use_ssl => uri.scheme == 'https') do |http|
-          success = JSON.parse(http.request(Net::HTTP::Get.new(uri)).body)["success"]
+          success = ::JSON.parse(http.request(Net::HTTP::Get.new(uri)).body)["success"]
         end
 
         if success && !logged_in?
@@ -162,7 +162,7 @@ module Sinatra
         end
 
         if response[:status] == "true"
-          items = JSON.parse(items)
+          items = ::JSON.parse(items)
           date = Time.new.strftime('%Y-%m-%d_%H:%M:%S')
           if Loans.create({
                               :id => loan_id,

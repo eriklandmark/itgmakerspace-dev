@@ -20,7 +20,7 @@ article#item_main.main
           img alt="Bild läggs till inom kort." src="/product_images/product_#{item.id}.#{get_inv_img_ext_from_id(item.id)}" /
         - unless item.specs.nil? || item.specs.empty? || !valid_json?(item.specs)
           .item_divider
-          - item_specs = JSON.parse(item.specs)
+          - item_specs = ::JSON.parse(item.specs)
           - item_specs.keys.each do |title|
             h4 = title.to_s
             table
