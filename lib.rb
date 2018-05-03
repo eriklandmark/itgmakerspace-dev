@@ -19,6 +19,12 @@ def get_inv_img_ext_from_id(id)
   end
 end
 
+def get_prof_img_ext_from_id(id)
+  Dir.foreach("public/profile_images").each do |file|
+    return file.split(".")[1].to_s if file.include?(id.to_s)
+  end
+end
+
 def valid_json?(json)
   !!JSON.parse(json)
 rescue JSON::ParserError => _

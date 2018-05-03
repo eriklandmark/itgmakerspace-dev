@@ -9,6 +9,25 @@ module Sinatra
         end
       end
 
+      app.post '/admin/accounts/new' do
+        if has_auth_level?(2)
+          info = {
+              :name => params["user-full_name"],
+              :email => params["user-email"],
+              :birth_date => params["user-birth_date"],
+              :permission_level => params["user-auth_level"],
+              :password => params["user-password"]
+          }
+          if Users.create(info)
+            redirect '/admin/accounts'
+          else
+            ErrorHandler.e_500(self, "Could not create account!")
+          end
+        else
+          ErrorHandler.e_403(self, nil)
+        end
+      end
+
       app.patch '/admin/accounts/:user_id' do
         if has_auth_level?(2)
           user = Users.first(:id => params["user_id"])
@@ -26,6 +45,23 @@ module Sinatra
             redirect '/admin/accounts'
           else
             ErrorHandler.e_500(self, "User not found!")
+          end
+        else
+          ErrorHandler.e_403(self, nil)
+        end
+      end
+
+      app.delete '/admin/accounts/:user_id' do
+        if has_auth_level?(2)
+          if session[:user_id] == params["user_id"].to_i
+            ErrorHandler.e_500(self, "Du kan inte ta bort dig själv!")
+          else
+            user = Users.first(:id => params["user_id"])
+            if !user.nil? && user.delete
+              redirect '/admin/accounts'
+            else
+              ErrorHandler.e_404(self, "User not found!")
+            end
           end
         else
           ErrorHandler.e_403(self, nil)
@@ -65,19 +101,6 @@ module Sinatra
             redirect '/admin/inventory/categories'
           else
             ErrorHandler.e_500(self, "Category not found!")
-          end
-        else
-          ErrorHandler.e_403(self, nil)
-        end
-      end
-
-      app.delete '/admin/accounts/:user_id' do
-        if has_auth_level?(2)
-          user = Users.first(:id => params["user_id"])
-          if !user.nil? && user.delete
-            redirect '/admin/accounts'
-          else
-            ErrorHandler.e_404(self, "User not found!")
           end
         else
           ErrorHandler.e_403(self, nil)

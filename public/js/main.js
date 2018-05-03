@@ -259,7 +259,7 @@ function on_login_submit() {
         if (response.status === "true") {
             document.getElementById("login_form").submit();
         } else {
-            document.getElementById("error_msg").innerHTML = response.status_msg;
+            info(response.status_msg);
         }
     });
 }
@@ -290,7 +290,7 @@ function on_change_pass_submit() {
         if (response.status === "true") {
             document.getElementById("chg_pass_form").submit();
         } else {
-            document.getElementById("error_msg").innerHTML = response.status_msg;
+            info(response.status_msg);
         }
     });
 }

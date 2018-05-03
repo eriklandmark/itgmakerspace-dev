@@ -1,0 +1,53 @@
+- content_for :title do
+  | Konto - #{user.name}
+
+article#user_page.main
+  #dark-bg
+  #change_profile_picture
+    h3 Välj ny profil bild:
+    img#close_button src="/icons/close_icon.svg" title="Stäng" onclick="document.getElementById('change_profile_picture').style.display='none';document.getElementById('dark-bg').style.display='none';"
+    form action="/users/#{user.id}/profile-picture/edit" method="post" enctype="multipart/form-data"
+      input id="hidden" type="hidden" name="_method" value="patch"
+      input type="file" name="user-profile-picture" accept="image/*"
+      input type="submit" value="Välj"
+  #main
+    #top_section
+      #title
+        h1 Din profil:
+      #user_actions
+        a.a_button_w_img_o_text href="/users/#{user.id}/edit"
+          img src="/icons/settings_icon_black.svg"
+          | Redigera Profil
+    #upper_section
+      #profile_picture
+        - ext = get_prof_img_ext_from_id(user.id)
+        - if File.exists?("public/profile_images/profile_#{user.id}.#{ext}")
+          img src="/profile_images/profile_#{user.id}.#{ext}"
+        - else
+          img src="/profile_images/default_profile_picture.svg"
+
+        #profile_picture_actions
+          a.a_button_w_img_small onclick="document.getElementById('change_profile_picture').style.display='flex';document.getElementById('dark-bg').style.display='flex';"
+            img src="/icons/edit_icon.svg" alt="Redigera profilbild"
+          form#delete_prof_img action="/users/#{user.id}/profile-picture/delete" method="post"
+            input type="hidden" name="_method" value="delete"
+            a.a_button_w_img_small title="Ta bort profilbild."
+              img src="/icons/delete_icon.svg" onclick=("question('Vill du verkligen ta bort din profilbild?', function () {document.getElementById('delete_prof_img').submit()});")
+      #user_info
+        p Namn:
+        h3 = user.name
+        p Email:
+        h3 = user.email
+        p Födelsedag:
+        h3 = user.birth_date
+        p Lösenord:
+        a.a_button href="/users/#{user.id}/edit/change-password" Byt Lösenord
+    #page_divider
+    //#lower_section
+      h2 Statistik
+      table
+        tr
+          td
+            h3 Antal Lån:
+          td
+            p = user.loans.length

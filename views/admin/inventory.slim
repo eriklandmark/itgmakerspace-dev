@@ -11,19 +11,24 @@
           p #{Inventory.count}
       tr
         td
-          h4 Totalt antal lån:
-        td
-          p #{Loans.count}
-      tr
-        td
           h4 Totalt antal saker i lagret:
         td
           p #{Inventory.sum(:stock_quantity)}
       tr
         td
-          h4 Totalt antal lånade saker:
+          h4 Totalt antal lån:
         td
-          p #{Loan_Items.sum(:quantity)}
+          p #{Loans.count}
+      tr
+        td
+          h4 Totalt antal aktiva lån:
+        td
+          p #{Loans.count(:status => Loans::ACTIVE)}
+      tr
+        td
+          h4 Totalt antal av aktivt lånade saker:
+        td
+          p #{Loan_Items.sum(:quantity, :status => Loan_Items::ACTIVE)}
 
     h2 Lagret
     table.items_table

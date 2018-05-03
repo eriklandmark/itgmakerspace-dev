@@ -40,23 +40,32 @@ html
           a.nav_title href="/wiki"  Wiki
       #right_nav
         - if logged_in?
-          img src="/icons/account_icon.svg" onclick="open_user_menu()"
-          p |
-          form#logout_form action="/session/delete" method="post"
-            input type="hidden" name="_method" value="delete"
-            img src="/icons/logout_icon.svg" onclick="document.getElementById('logout_form').submit()" title="Logga ut"
+          section onclick="open_user_menu()"
+            - ext = get_prof_img_ext_from_id($current_user.id)
+            - if File.exists?("public/profile_images/profile_#{$current_user.id}.#{ext}")
+              img#user_profile_image src="/profile_images/profile_#{$current_user.id}.#{ext}"
+            - else
+              img#user_profile_image src="/profile_images/default_profile_picture.svg"
+            p = $current_user.name
+            img src="/icons/menu-down_icon.svg"
         - else
           a.nav_title href="/users/new" Registrera
           p |
           a.nav_title href="/session/new" Logga In
       -if logged_in?
         #user_menu
-          h3 Välkommen #{$current_user.name}
+          h3 Välkommen
           - if has_auth_level?(2)
             a href="/admin" Admin Panel
-          a href="/users/#{session[:user_id]}/edit"
-            p Redigera profil
           a href="/users/#{session[:user_id]}/loans"  Lånade saker
+          #user_actions
+            .user_menu_icons
+              a href="/users/#{session[:user_id]}"
+                img src="/icons/account_icon.svg" title="Din profil"
+            .user_menu_icons
+              form#logout_form action="/session/delete" method="post"
+                input type="hidden" name="_method" value="delete"
+                img src="/icons/logout_icon.svg" onclick="document.getElementById('logout_form').submit()" title="Logga ut"
     nav#nav_mobile
       h5
         span.itg-logo-blue I
@@ -90,14 +99,14 @@ html
     footer#footer_desktop
       a href="https://www.it-gymnasiet.se"
         img.itg_logo alt="" src="/images/itgymnasiet_logo_horizontal.png"
-      p Version: 2.7.0
+      p Version: 2.7.1
       p |
       p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
       javascript:
           TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL1", "none");
     footer#footer_mobile
       p Copyright © 2018 IT-Gymnasiet Göteborg Makerspace. Alla rättigheter förbehålls.
-      p Version: 2.7.0
+      p Version: 2.7.1
       javascript:
         TrustLogo("/images/comodo_secure_seal_76x26_transp.png", "CL2", "none");
       a href="https://www.it-gymnasiet.se"

@@ -23,7 +23,8 @@ module Sinatra
                 :email => params['email'].downcase,
                 :password => BCrypt::Password.create(params['password1']),
                 :name => params['fullname'],
-                :birth_date => params['birth']
+                :birth_date => params['birth'],
+                :permission_level => 1
             }
 
             if Users.create(new_user)
@@ -75,7 +76,7 @@ module Sinatra
           }
 
           if !user.nil? && user.update(info)
-            redirect '/'
+            redirect "/users/#{params[:user_id]}"
           else
             ErrorHandler.e_500(self, "User not found!")
           end
@@ -104,11 +105,7 @@ module Sinatra
       end
 
       app.get '/loans' do
-        if logged_in?
-          redirect "/users/#{session[:user_id]}/loans"
-        else
-          ErrorHandler.e_403(self, nil)
-        end
+        redirect "/users/#{session[:user_id]}/loans"
       end
 
       app.get '/users/:user_id/loans' do
@@ -128,11 +125,13 @@ module Sinatra
             end
             response[:status] = 'true'
             response[:items] = items
+          else
+            response[:status_msg] = "Ett fel uppstod med användaren. Försök att logga ut och logga in igen."
           end
 
           response.to_json
         elsif params["user_id"].to_i == session[:user_id] || has_auth_level?(2)
-          slim :my_loans
+          slim :my_loans, :locals => {:params => params}
         else
           ErrorHandler.e_403(self, nil)
         end
@@ -204,7 +203,7 @@ module Sinatra
           proceed = false
           if origin == 2 && params['security_key'] != nil && user.security_key == params['security_key']
             proceed = true
-          elsif origin == 1 && user_id == session[:user_id]
+          elsif origin == 1 && (user_id == session[:user_id] || has_auth_level?(2))
             proceed = true
           end
 
@@ -257,6 +256,56 @@ module Sinatra
           end
         end
         response.to_json
+      end
+
+      app.patch '/users/:user_id/profile-picture/edit' do
+        if params["user_id"].to_i == session[:user_id] || has_auth_level?(2)
+          user = Users.first(:id => params["user_id"]) {{:include => "loans"}}
+          if !user.nil? && !params["user-profile-picture"].nil?
+            path = "public/profile_images/profile_#{params["user_id"]}.#{params[:"user-profile-picture"][:filename].split('.')[-1]}"
+            Dir.foreach("public/profile_images").each do |file|
+              File.delete(File.join("public/profile_images", file)) if file.include?(params["user_id"].to_s)
+            end
+
+            if params[:"user-profile-picture"][:type].include?("image")
+              File.open(path, "w") do |file|
+                file.write(params[:"user-profile-picture"][:tempfile].read)
+              end
+              redirect "/users/#{params['user_id']}"
+            else
+              return ErrorHandler.e_500(self, "You didn't upload a image file. Try again!")
+            end
+          else
+            ErrorHandler.e_404(self, "Användaren med id '#{params["user_id"]}' finns inte..")
+          end
+        else
+          ErrorHandler.e_403(self, nil)
+        end
+      end
+
+      app.delete '/users/:user_id/profile-picture/delete' do
+        if params["user_id"].to_i == session[:user_id] || has_auth_level?(2)
+          Dir.foreach("public/profile_images").each do |file|
+            File.delete(File.join("public/profile_images", file)) if file.include?(params["user_id"].to_s)
+          end
+
+          redirect "/users/#{params['user_id']}"
+        else
+          ErrorHandler.e_403(self, nil)
+        end
+      end
+
+      app.get '/users/:user_id' do
+        if params["user_id"].to_i == session[:user_id] || has_auth_level?(2)
+          user = Users.first(:id => params["user_id"]) {{:include => "loans"}}
+          if !user.nil?
+            slim :user_page, :locals => {:user => user}
+          else
+            ErrorHandler.e_404(self, "Användaren med id '#{params["user_id"]}' finns inte..")
+          end
+        else
+          ErrorHandler.e_403(self, nil)
+        end
       end
     end
   end

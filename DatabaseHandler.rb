@@ -224,7 +224,7 @@ module DatabaseHandler
           if relation != nil
             con_query = generate_condition_query(condition, @table_name)
             elements = []
-            $database.execute("SELECT * FROM #{@table_name} INNER JOIN #{relation[:class].get_table_name} ON #{@table_name}.#{relation[:key_1]} = #{relation[:class].get_table_name}.#{relation[:key_2]}#{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition)).each do |e|
+            $database.execute("SELECT * FROM #{@table_name} LEFT JOIN #{relation[:class].get_table_name} ON #{@table_name}.#{relation[:key_1]} = #{relation[:class].get_table_name}.#{relation[:key_2]}#{con_query[0]}#{con_query[1]}", *get_values_from_condition(condition)).each do |e|
               table_1_values = {}
               table_2_values = {}
               table_1 = e[0..@attributes.length - 1]
@@ -236,14 +236,22 @@ module DatabaseHandler
                 table_2_values[attribute[:name]] = table_2[index]
               end
               table_1_values[relation[:method].to_sym] ||= []
-              table_1_values[relation[:method].to_sym] << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
+              items_nil = true
               contains_element = false
-              elements.each_with_index do |element, index|
-                if element.instance_variable_get("@" + relation[:key_1].to_s) == table_1_values[relation[:key_1].to_s]
-                  contains_element = true
-                  rels = elements[index].instance_variable_get("@" + relation[:method].to_s)
-                  rels << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
-                  elements[index].instance_variable_set(("@" + relation[:method].to_s).to_sym, rels)
+              table_2_values.values.each do |value|
+                unless value.nil?
+                  items_nil = false
+                end
+              end
+              unless items_nil
+                table_1_values[relation[:method].to_sym] << DatabaseHandler::DatabaseObject.new(relation[:method].to_s, table_2_values)
+                elements.each_with_index do |element, index|
+                  if element.instance_variable_get("@" + relation[:key_1].to_s) == table_1_values[relation[:key_1].to_s]
+                    contains_element = true
+                    rels = elements[index].instance_variable_get("@" + relation[:method].to_s)
+                    rels << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
+                    elements[index].instance_variable_set(("@" + relation[:method].to_s).to_sym, rels)
+                  end
                 end
               end
               unless contains_element
@@ -308,9 +316,7 @@ module DatabaseHandler
               end
 
               table_1_values[relation[:method].to_sym] ||= []
-              if items_nil
-                table_1_values[relation[:method].to_sym] = nil
-              else
+              unless items_nil
                 table_1_values[relation[:method].to_sym] << DatabaseHandler::DatabaseObject.new(relation[:class].get_table_name, table_2_values)
               end
             end

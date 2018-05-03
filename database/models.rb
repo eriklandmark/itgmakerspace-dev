@@ -209,3 +209,22 @@ class Inventory < DatabaseHandler::Table
     end
   end
 end
+
+class Logs < DatabaseHandler::Table
+  ERROR_LOG = 1
+  NORMAL_LOG = 0
+
+  table_name "logs"
+
+  attribute "id", "Integer", :primary_key => true, :auto_increment => true, :not_null => true
+  attribute "type", "Integer"
+  attribute "code", "Integer"
+  attribute "description", "VARCHAR(200)"
+  attribute "stacktrace", "VARCHAR(16384)"
+  attribute "ip", "VARCHAR(20)"
+  attribute "path", "VARCHAR(200)"
+  attribute "message", "VARCHAR(200)"
+  attribute "datetime", "VARCHAR(20)"
+
+  init_table
+end

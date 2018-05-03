@@ -5,11 +5,12 @@ input[type=submit], input[type=button], input[type=reset] {
   font-size: 1.3em;
   padding: 10px 20px;
   color: black;
-  box-sizing : border-box;
+  box-sizing: border-box;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
   justify-content: center;
+  white-space: nowrap;
 
   &:hover {
     cursor: pointer;
@@ -67,6 +68,16 @@ label {
   @extend .a_button;
   padding: 5px;
   img {
+    width: 38px;
+    height: 38px;
+  }
+}
+
+.a_button_w_img_o_text {
+  @extend .a_button;
+  padding: 5px 10px;
+  img {
+    padding-right: 5px;
     width: 38px;
     height: 38px;
   }

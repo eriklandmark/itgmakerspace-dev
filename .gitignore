@@ -3,3 +3,4 @@ itgmakerspace-dev.iml
 database/*.sqlite
 public/product_images
 db_tester.rb
+public/profile_images/profile_*.*

@@ -11,7 +11,7 @@
   overflow-x: hidden;
   overflow-y: auto;
   box-sizing: border-box;
-  z-index: 1;
+  z-index: 2;
   margin-top: $nav_bar_height;
 
   @include media-desktop {
@@ -100,6 +100,9 @@
 #menu_icon_input {
   display: none;
   &:checked {
+    & ~ #admin_menu_close_box {
+      display: flex;
+    }
     & ~ section.admin_primary_nav {
       height: calc(100% - #{$footer_height} - #{$nav_bar_height});
       @include media-desktop {
@@ -173,6 +176,17 @@
   }
 }
 
+#admin_menu_close_box {
+  position: fixed;
+  width: 100vw;
+  height: 100vh;
+  background: none;
+  right: 0;
+  top:0;
+  display: none;
+  z-index: 1;
+}
+
 #admin-main {
   display: flex;
   flex-direction: column;
@@ -190,12 +204,18 @@
   }
 
   .statistics_table  {
+    width: 100%;
     h4, p {
       margin: 0;
     }
 
+    h4 {
+      text-align: right;
+    }
+
     td {
-      padding-right: 30px;
+      padding: 0 15px;
+      width: 50%;
     }
   }
 
@@ -205,7 +225,7 @@
 
     td {
       border-bottom: solid rgba(0,0,0,0.15) 2px;
-      padding: 10px 0;
+      padding: 10px 5px;
     }
 
     p {

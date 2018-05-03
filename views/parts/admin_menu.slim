@@ -5,11 +5,11 @@ section.admin_primary_nav
   ul
     li
       span onclick="document.getElementById('menu_icon_input').checked = true;"
-        img.icon src="/icons/home_icon.svg"
+        img.icon src="/icons/home_icon.svg" title="Hem"
         | Hem
     li
       span onclick="document.getElementById('menu_icon_input').checked = true;"
-        img.icon src="/icons/accounts_icon.svg"
+        img.icon src="/icons/accounts_icon.svg" title="Konton"
         | Konton
       ul.under_nav
         li
@@ -18,8 +18,8 @@ section.admin_primary_nav
           a href="/admin/accounts/new" Nytt konto
     li
       span onclick="document.getElementById('menu_icon_input').checked = true;"
-        img.icon src="/icons/inventory_icon.svg"
-        | Lager
+        img.icon src="/icons/inventory_icon.svg" title="Lagret"
+        | Lagret
       ul.under_nav
         li
           a href="/admin/inventory" Alla artiklar
@@ -29,7 +29,7 @@ section.admin_primary_nav
           a href="/admin/inventory/categories" Kategorier
     li
       span onclick="document.getElementById('menu_icon_input').checked = true;"
-        img.icon src="/icons/orders_icon.svg"
+        img.icon src="/icons/orders_icon.svg" value="Beställningar"
         | Beställningar
       ul.under_nav
         li
@@ -38,7 +38,7 @@ section.admin_primary_nav
           a href="/admin/orders/new" Skapa ny beställning
     li
       span onclick="document.getElementById('menu_icon_input').checked = true;"
-        img.icon src="/icons/database_icon.svg"
+        img.icon src="/icons/database_icon.svg" value="Databasen"
         | Databasen
       ul.under_nav
         li
@@ -47,3 +47,12 @@ section.admin_primary_nav
           a href="/admin/database/backups-new" Skapa ny backup
         li
           a href="/admin/database/backups-restore" Äterställ från backup
+    li
+      span onclick="document.getElementById('menu_icon_input').checked = true;"
+        img.icon src="/icons/error_icon.svg" value="Loggar"
+        | Loggar
+      ul.under_nav
+        li
+          a href="/admin/logs/errorlogs" Felloggar
+
+label#admin_menu_close_box for="menu_icon_input"

@@ -4,7 +4,7 @@
 article#my_loans_main.main
   h3 Här finns alla saker du har lånat:
   #loaned_items
-    - loans = Loans.all(:user_id => session[:user_id], :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}
+    - loans = Loans.all(:user_id => params[:user_id], :status => Loans::ACTIVE, :order => [:id, :asc]) {{:include => "items"}}
     - if loans.length <= 0
       h3 Du har inte lånat något.
     - else
@@ -19,14 +19,15 @@ article#my_loans_main.main
       - loans.each do |loan|
         - date_id += 1
         h4.date_paragraph id="date_id_#{date_id}"
-          | Saker lånat den #{loan.date_loaned}
+          | Saker lånat den #{loan.date_loaned.gsub("-", " ")}
         table id="table_id_#{date_id}"
           - loan.items.each do |item|
             - id += 1
+            - item_name = Inventory.first(:id => item.item_id).name
             tr id="table_row_#{id}"
               td.name
-                a.table_item href="/inventory/#{item.item_id}" = Inventory.first(:id => item.item_id).name
+                a.table_item href="/inventory/#{item.item_id}" = item_name
               td.quantity id="table_item_quantity_#{id}"
                 p.table_item = item.quantity
               td
-                input onclick="delete_item(#{session[:user_id]},#{loan.id},#{item.item_id}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka")
+                input onclick="delete_item(#{params[:user_id]},#{loan.id},#{item.item_id}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka") title="Lämna tillbaka #{item_name}"

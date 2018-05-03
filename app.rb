@@ -19,7 +19,7 @@ class App < Sinatra::Base
   end
 
   error do
-    ErrorHandler.e_500(self, nil)
+    ErrorHandler.e_500(self, nil, env['sinatra.error'])
   end
 
   register Sinatra::RoutesAdmin
@@ -29,7 +29,6 @@ class App < Sinatra::Base
   register Sinatra::RoutesSessions
   register Sinatra::RoutesUsers
   register Sinatra::RoutesWiki
-
 
   get '/' do
     dates = nil
@@ -48,5 +47,9 @@ class App < Sinatra::Base
       end
     end
     slim :index, :locals => {:day => day, :year => year, :month => month, :hour => hour}
+  end
+
+  get '/error' do
+    r
   end
 end

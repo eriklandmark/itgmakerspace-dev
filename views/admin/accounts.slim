@@ -23,15 +23,25 @@
         td
           h3 Ålder
         td
+          h3 Konto Roll
+        td
+          h3 Lån
+        td
 
-      - Users.all.each do |user|
+      - Users.all{{:include => "loans"}}.each do |user|
         tr
           td
-            p = user.name
+            a href="/users/#{user.id}" = user.name
           td
             p = user.email
           td
             p = user.birth_date
+          td
+            p = ["Standard", "Administrator"][user.permission_level - 1]
+          td
+            - active_loans = 0
+            - user.loans.each {|loan| active_loans += 1 if loan.status == Loans::ACTIVE}
+            p #{active_loans} / #{user.loans.length}
           td
             .actions
               form id="delete_user_#{user.id}" action="/admin/accounts/#{user.id}" method="post"
@@ -40,3 +50,5 @@
                   img src="/icons/delete_icon.svg" onclick=("question('Vill du verkligen ta bort #{user.name}?', function () {document.getElementById('delete_user_#{user.id}').submit()});")
               a.a_button_w_img_small href="/admin/accounts/edit?user_id=#{user.id}" title="Redigera #{user.name}"
                 img src="/icons/edit_icon.svg"
+              a.a_button_w_img_small href="/users/#{user.id}/loans" title="#{user.name}'s lånade saker."
+                img src="/icons/loans_icon.svg"
