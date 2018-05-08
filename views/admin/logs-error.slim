@@ -1,0 +1,45 @@
+== slim :"parts/admin_menu"
+#admin-main.main
+  .logs-main
+    h1 Fellogar:
+    h2 Statistik
+    table.statistics_table
+      tr
+        td
+          h4 Totalt antal loggar:
+        td
+          p #{Logs.count(:id)}
+      tr
+        td
+          h4 Totalt antal felloggar:
+        td
+          p #{Logs.count(:id, :type => Logs::ERROR_LOG)}
+
+    h2 Loggar:
+    table.items_table
+      tr
+        td
+          h3 Felkod:
+        td
+          h3 Path:
+        td
+          h3 Beskriving
+        td
+          h3 Datum & tid:
+        td
+      - Logs.all(:type => Logs::ERROR_LOG).each do |log|
+        tr
+          td
+            a href="/admin/logs/error/#{log.id}" = log.code
+          td
+            a href="/admin/logs/error/#{log.id}" = log.path
+          td
+            a href="/admin/logs/error/#{log.id}" = log.description
+          td
+            a href="/admin/logs/error/#{log.id}" = log.datetime.gsub("_", " ")
+          td
+            .actions
+              form id="delete_item_#{log.id}" action="/inventory/#{log.id}/delete" method="post"
+                input type="hidden" name="_method" value="delete"
+                a.a_button_w_img_small title="Ta bort logg?"
+                  img src="/icons/delete_icon.svg" onclick=("question('Vill du verkligen ta bort loggen från listan?', function () {document.getElementById('delete_item_#{log.id}').submit()});")

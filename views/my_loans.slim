@@ -22,12 +22,13 @@ article#my_loans_main.main
           | Saker lånat den #{loan.date_loaned.gsub("-", " ")}
         table id="table_id_#{date_id}"
           - loan.items.each do |item|
-            - id += 1
-            - item_name = Inventory.first(:id => item.item_id).name
-            tr id="table_row_#{id}"
-              td.name
-                a.table_item href="/inventory/#{item.item_id}" = item_name
-              td.quantity id="table_item_quantity_#{id}"
-                p.table_item = item.quantity
-              td
-                input onclick="delete_item(#{params[:user_id]},#{loan.id},#{item.item_id}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka") title="Lämna tillbaka #{item_name}"
+            - if item.status == Loan_Items::ACTIVE
+              - id += 1
+              - item_name = Inventory.first(:id => item.item_id).name
+              tr id="table_row_#{id}"
+                td.name
+                  a.table_item href="/inventory/#{item.item_id}" = item_name
+                td.quantity id="table_item_quantity_#{id}"
+                  p.table_item = item.quantity
+                td
+                  input onclick="delete_item(#{params[:user_id]},#{loan.id},#{item.item_id}, #{id}, #{date_id})" type="button" value=("Lämna tillbaka") title="Lämna tillbaka #{item_name}"

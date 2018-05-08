@@ -47,7 +47,11 @@
         tr
           td.item_picture
             a href="/inventory/#{item.id}"
-              img alt="TBA" src="/product_images/product_#{item.id}.#{extensions['product_' + item.id.to_s]}"
+              - path = "/product_images/product_#{item.id}.#{extensions['product_' + item.id.to_s]}"
+              - if File.exists?("public#{path}")
+                img alt="TBA" src="#{path}" title="#{item.name}"
+              - else
+                img alt="TBA" src="/icons/image_broken_icon.svg" title="Det finns ingen bild än.."
           td
             a href="/inventory/#{item.id}" = item.name
           td

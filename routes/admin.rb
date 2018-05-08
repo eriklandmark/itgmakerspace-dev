@@ -107,6 +107,14 @@ module Sinatra
         end
       end
 
+      app.get '/admin/logs/error/:log_id' do
+        if has_auth_level?(2)
+          slim :"admin/logs-page", :locals => {:params => params}
+        else
+          ErrorHandler.e_403(self, nil)
+        end
+      end
+
       app.get '/admin/:page' do
         if has_auth_level?(2) && File.exists?("views/admin/#{params[:page]}.slim")
           slim :"admin/#{params[:page]}"

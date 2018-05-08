@@ -17,7 +17,11 @@ article#item_main.main
         - unless item.barcode.nil? || item.barcode.empty?
           p#barcode Streckkod: #{item.barcode}
         #item_image
-          img alt="Bild läggs till inom kort." src="/product_images/product_#{item.id}.#{get_inv_img_ext_from_id(item.id)}" /
+          - path = "product_images/product_#{item.id}.#{get_inv_img_ext_from_id(item.id)}"
+          - if File.exists?("public/#{path}")
+            img alt="TBA" src="#{path}"
+          - else
+            img alt="TBA" src="/icons/image_broken_icon.svg" title="Det finns ingen bild än.."
         - unless item.specs.nil? || item.specs.empty? || !valid_json?(item.specs)
           .item_divider
           - item_specs = ::JSON.parse(item.specs)

@@ -1,0 +1,39 @@
+== slim :"parts/admin_menu"
+#admin-main.main
+  - log = Logs.first(:id => params["log_id"])
+  .logs-main
+    h2 Loginfo:
+    table#log_info_table
+      tr
+        td
+          h4 Felkod:
+        td
+          p = log.code
+      tr
+        td
+          h4 Path:
+        td
+          p = log.path
+      tr
+        td
+          h4 IP:
+        td
+          p = log.ip
+      tr
+        td
+          h4 Datum & tid:
+        td
+          p = log.datetime
+      tr
+        td
+          h4 Meddelande:
+        td
+          p = log.message
+      tr
+        td
+          h4 Beskrivning:
+        td
+          p = log.description
+    - unless log.stacktrace.nil? && log.stacktrace.empty?
+      h3 Stacktrace
+      code = log.stacktrace

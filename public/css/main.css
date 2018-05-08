@@ -1825,5 +1825,14 @@ label {
         align-items: center; }
       #admin-main .orders-main > form table {
         width: 100%; }
+  #admin-main .logs-main {
+    width: 80%;
+    display: flex;
+    flex-direction: column;
+    align-items: center; }
+    #admin-main .logs-main table {
+      width: 100%; }
+    #admin-main .logs-main #log_info_table p, #admin-main .logs-main #log_info_table h4 {
+      margin: 0; }
 
 /*# sourceMappingURL=main.css.map */

@@ -23,6 +23,7 @@ class ErrorHandler
                    :ip => app.request.ip,
                    :datetime => Time.new.strftime('%Y-%m-%d_%H:%M:%S')
                   })
+      puts "Created a log about the matter!"
     end
     app.slim :error_page, :locals => {:error_code => '403', :error_msg => msg}
   end
@@ -51,6 +52,7 @@ class ErrorHandler
                    :ip => app.request.ip,
                    :datetime => Time.new.strftime('%Y-%m-%d_%H:%M:%S')
                   })
+      puts "Created a log about the matter!"
     end
     app.slim :error_page, :locals => {:error_code => '404', :error_msg => msg}
   end
@@ -82,6 +84,7 @@ class ErrorHandler
                    :ip => app.request.ip,
                    :datetime => Time.new.strftime('%Y-%m-%d_%H:%M:%S')
                   })
+      puts "Created a log about the matter!"
     end
     app.slim :error_page, :locals => {:error_code => '500', :error_msg => msg}
   end
